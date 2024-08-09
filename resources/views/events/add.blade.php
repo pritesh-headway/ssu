@@ -18,13 +18,13 @@
             @csrf
             <div class="form-group">
                 <label for="exampleInputEmail1">Event Name</label>
-                <input type="text" class="form-control character" id="event_name" name="event_name"
-                    aria-describedby="emailHelp" required>
+                <input type="text" class="form-control" id="event_name" name="event_name" aria-describedby="emailHelp"
+                    required>
             </div>
             <br />
             <div class="form-group">
                 <label for="exampleInputEmail1">Event Description</label>
-                <textarea class="form-control character" rows="5" name="event_description" id="comment"></textarea>
+                <textarea class="form-control" rows="5" name="event_description" id="comment"></textarea>
             </div>
             <br />
             <div class="form-group">
@@ -35,26 +35,27 @@
             <br />
             <div class="form-group">
                 <label for="exampleInputEmail1">Start Date</label>
-                <input type="date" class="form-control" id="start_date" name="start_date" aria-describedby="emailHelp"
+                <input type="text" class="form-control" id="start_date" name="start_date" aria-describedby="emailHelp"
                     required>
             </div>
             <br />
             <div class="form-group">
                 <label for="exampleInputEmail1">End Date</label>
-                <input type="date" class="form-control" id="end_date" name="end_date" aria-describedby="emailHelp"
+                <input type="text" class="form-control" id="end_date" name="end_date" aria-describedby="emailHelp"
                     required>
             </div>
             <br />
             <div class="form-group">
                 <label for="sel1">Select Image Type:</label>
                 <select class="form-control" id="image_type" name="image_type">
+                    <option value="3">Both</option>
                     <option value="1">Desktop</option>
                     <option value="2">Mobile</option>
                 </select>
             </div>
             <br />
             <div class="form-group">
-                <input type="file" name="event_image" class="form-control-file border" required>
+                <input type="file" accept="image/*" name="event_image" class="form-control-file border" required>
             </div>
             <br />
             <button type="submit" class="btn btn-primary">Submit</button>

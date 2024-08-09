@@ -28,7 +28,9 @@
 <script src="{{ URL::to('assets/js/jquery-3.js') }}"></script>
 <link href="{{ URL::to('assets/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
 <script src="{{ URL::to('assets/js/jquery.dataTables.min.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
+</script>
 <script src="{{ URL::to('assets/js/dataTables.bootstrap5.min.js') }}"></script>
 <script type="text/javascript">
     $(function() {
@@ -57,7 +59,7 @@
                     data: 'avatar',
                     name: 'avatar',
                     "render": function(data, type, full, meta) {
-                        return "<img src=\"profile_images/" + data + "\" height=\"50\" width=\"100\"/>";
+                        return "<img src=\"profile_images/" + data + "\" height=\"50\" width=\"50\"/>";
                     },
                 },
                 {
@@ -70,5 +72,21 @@
             lengthMenu: [25, 50, 100]
         });
     });
+
+    function deleteItem(id) {
+        if (confirm('Are you sure you want to delete this item?')) {
+            $.ajax({
+                url: 'seller/' + id,
+                type: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    $('#myTable').DataTable().ajax.reload();
+                    alert(response.success);
+                }
+            });
+        }
+    }
 </script>
 @endsection

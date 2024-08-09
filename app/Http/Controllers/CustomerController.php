@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Yajra\DataTables\Facades\Datatables;
+use Yajra\DataTables\Datatables;
 use Hash;
 use Illuminate\Support\Facades\DB;
 
@@ -23,9 +23,7 @@ class CustomerController extends Controller
                 ->addColumn('action', function ($row) {
                     $actionBtn = '<a href="' . route("customer.edit", $row->id) . '"
               class="edit btn btn-success btn-sm">Edit</a> 
-              <a href="' . URL("customer/destroy/" . $row->id) . '" 
-              class="delete btn btn-danger btn-sm">Delete
-              </a>';
+              <button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Delete</button>';
                     return $actionBtn;
                 })
                 ->rawColumns(['action'])

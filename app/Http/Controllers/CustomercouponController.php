@@ -6,7 +6,7 @@ use App\Models\User;
 use App\Models\Customercoupon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Yajra\DataTables\Facades\Datatables;
+use Yajra\DataTables\Datatables;
 use Illuminate\Support\Facades\DB;
 use Hash;
 

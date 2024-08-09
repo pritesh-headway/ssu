@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Yajra\DataTables\Facades\Datatables;
+use Yajra\DataTables\Datatables;
 use Hash;
 
 class SellerController extends Controller
@@ -16,15 +16,13 @@ class SellerController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = User::all()->whereNotIn('id', 1)->where('user_type', 2);
+            $data = User::all()->whereNotIn('id', 1)->where('user_type', 2)->where('status', 1);
             return Datatables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
                     $actionBtn = '<a href="' . route("seller.edit", $row->id) . '"
               class="edit btn btn-success btn-sm">Edit</a> 
-              <a href="' . URL("seller/destroy/" . $row->id) . '" 
-              class="delete btn btn-danger btn-sm">Delete
-              </a>';
+              <button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Delete</button>';
                     return $actionBtn;
                 })
                 ->rawColumns(['action'])
@@ -46,6 +44,7 @@ class SellerController extends Controller
      */
     public function store(Request $request)
     {
+      
         $request->validate([
             'name' => 'required|string|max:50',
             'lname' => 'required|string|max:50',
@@ -57,13 +56,22 @@ class SellerController extends Controller
         $input = $request->all();
 
         if ($image = $request->file('profile_image')) {
-            $destinationPath = 'profile_images/';
+            $destinationPath = 'public/profile_images/';
             $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
             $image->move($destinationPath, $profileImage);
 
             $input['avatar'] = "$profileImage";
         }
         $input['user_type'] = '2';
+        $input['lname'] = $request->lname;
+        $input['storename'] = $request->storename;
+        $input['PAN'] = $request->PAN;
+        $input['GST'] = $request->GST;
+        $input['flatNo'] = $request->flatNo;
+        $input['area'] = $request->area;
+        $input['city'] = $request->city;
+        $input['state'] = $request->state;
+        $input['pincode'] = $request->pincode;
         $input['password'] = Hash::make('123456');
         User::create($input);
 
@@ -104,15 +112,22 @@ class SellerController extends Controller
 
         $user = User::find($request->id);
         if ($image = $request->file('profile_image')) {
-            $destinationPath = 'profile_images/';
+            $destinationPath = 'public/profile_images/';
             $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
             $image->move($destinationPath, $profileImage);
             $input['avatar'] = "$profileImage";
         } else {
             unset($input['avatar']);
         }
-        $input['user_type'] = '2';
-        $input['password'] = Hash::make('123456');
+        $input['lname'] = $request->lname;
+        $input['storename'] = $request->storename;
+        $input['PAN'] = $request->PAN;
+        $input['GST'] = $request->GST;
+        $input['flatNo'] = $request->flatNo;
+        $input['area'] = $request->area;
+        $input['city'] = $request->city;
+        $input['state'] = $request->state;
+        $input['pincode'] = $request->pincode;
         $user->update($input);
 
         return redirect()->route('seller.index')

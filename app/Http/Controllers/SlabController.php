@@ -6,7 +6,7 @@ use App\Models\Slab;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Yajra\DataTables\Facades\Datatables;
+use Yajra\DataTables\Datatables;
 use Illuminate\Support\Facades\DB;
 
 class SlabController extends Controller
@@ -17,15 +17,13 @@ class SlabController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Slab::leftJoin('events', 'events.id', '=', 'slabs.event_id')->where('slabs.status', 1)->get();
+            $data = Slab::select('slabs.id', 'slabs.min_coupons', 'slabs.max_coupons', 'slabs.prize', 'slabs.event_id', 'slabs.status','events.event_name')->leftJoin('events', 'events.id', '=', 'slabs.event_id')->where('slabs.status', 1)->get();
             return Datatables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
                     $actionBtn = '<a href="' . route("slab.edit", $row->id) . '"
               class="edit btn btn-success btn-sm">Edit</a> 
-              <a href="' . URL("slab/destroy/" . $row->id) . '" 
-              class="delete btn btn-danger btn-sm">Delete
-              </a>';
+              <button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Delete</button>';
                     return $actionBtn;
                 })
                 ->rawColumns(['action'])
@@ -50,28 +48,20 @@ class SlabController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:50',
-            'lname' => 'required|string|max:50',
-            'storename' => 'required|string|max:100',
-            'email' => 'required|string|email|max:255',
-            'phone_number' => 'required|numeric|unique:users',
-            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'event_id' => 'required',
+            'min_coupons' => 'required',
+            'max_coupons' => 'required',
+            'prize' => 'required|numeric',
         ]);
         $input = $request->all();
 
-        if ($image = $request->file('profile_image')) {
-            $destinationPath = 'profile_images/';
-            $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
-            $image->move($destinationPath, $profileImage);
+        $input['event_id'] = $request->event_id;
+        $input['min_coupons'] = $request->min_coupons;
+        $input['max_coupons'] = $request->max_coupons;
+        $input['prize'] = $request->prize;
+        Slab::create($input);
 
-            $input['avatar'] = "$profileImage";
-        }
-        $input['user_type'] = '2';
-        $input['password'] = Hash::make('123456');
-        User::create($input);
-
-        return redirect()->route('slab.index')
-            ->with('success', 'Slab created successfully.');
+        return redirect()->route('slab.index')->with('success', 'Slab created successfully.');
     }
 
     /**
@@ -85,10 +75,11 @@ class SlabController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Slab $slab)
+    public function edit($id)
     {
-        $user = Slab::find($id);
-        return view('slabs.edit', compact('user'));
+        $slab = Slab::find($id);
+        $event = Event::all()->where('status', 1);
+        return view('slabs.edit', compact('slab','event'));
     }
 
     /**

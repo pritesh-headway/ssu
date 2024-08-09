@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Coupon;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\Datatables;
+use Yajra\DataTables\Datatables;
 
 class CouponController extends Controller
 {
@@ -20,9 +20,7 @@ class CouponController extends Controller
                 ->addColumn('action', function ($row) {
                     $actionBtn = '<a href="' . route("coupon.edit", $row->id) . '"
               class="edit btn btn-success btn-sm">Edit</a> 
-              <a href="' . URL("coupon/destroy/" . $row->id) . '" 
-              class="delete btn btn-danger btn-sm">Delete
-              </a>';
+              <button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Delete</button>';
                     return $actionBtn;
                 })
                 ->rawColumns(['action'])

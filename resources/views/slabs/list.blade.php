@@ -8,7 +8,6 @@
             <p>{{ $message }}</p>
         </div>
         @endif
-        <!-- <h2 class="mb-4" style="font-size: 2.0rem;">Events List</h2> -->
         <table id="myTable" class="table table-bordered data-table">
             <thead>
                 <tr>
@@ -78,7 +77,7 @@
     function deleteItem(id) {
         if (confirm('Are you sure you want to delete this item?')) {
             $.ajax({
-                url: 'event/' + id,
+                url: 'slab/' + id,
                 type: 'DELETE',
                 data: {
                     _token: '{{ csrf_token() }}'

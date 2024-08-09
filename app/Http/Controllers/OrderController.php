@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Yajra\DataTables\Facades\Datatables;
+use Yajra\DataTables\Datatables;
 use Illuminate\Support\Facades\DB;
 use Hash;
 
@@ -21,7 +21,7 @@ class OrderController extends Controller
             $orderSeller = DB::table('coupons_order')
             ->leftJoin('users', 'users.id', '=', 'coupons_order.user_id')
             ->leftJoin('events', 'events.id', '=', 'coupons_order.event_id')
-            ->select('coupons_order.id','coupons_order.user_id','coupons_order.event_id','coupons_order.quantity','coupons_order.receipt_payment','users.storename',DB::raw("CONCAT(users.name, ' ',users.lname) AS seller_name"),DB::raw("CASE WHEN coupons_order.order_status = 0 THEN 'Pending' WHEN coupons_order.order_status = 1 THEN 'Approved' WHEN coupons_order.order_status = 2 THEN 'Declined' WHEN coupons_order.order_status = 3 THEN 'Delivered' ELSE 'Pending' END AS order_status"),'events.event_name', 'events.event_location',DB::raw("DATE_FORMAT(coupons_order.created_at, '%d-%m-%Y') AS order_date"),DB::raw("YEAR(events.start_date) AS event_year"))
+            ->select('coupons_order.id','coupons_order.user_id','coupons_order.event_id','coupons_order.quantity','coupons_order.receipt_payment','users.storename',DB::raw("CONCAT(users.name, ' ',users.lname) AS seller_name"),DB::raw("CASE WHEN coupons_order.order_status = '0' THEN 'Pending' WHEN coupons_order.order_status = '1' THEN 'Approved' WHEN coupons_order.order_status = '2' THEN 'Declined' WHEN coupons_order.order_status = '3' THEN 'Delivered' ELSE 'Pending' END AS order_status"),'events.event_name', 'events.event_location',DB::raw("DATE_FORMAT(coupons_order.created_at, '%d-%m-%Y') AS order_date"),DB::raw("YEAR(events.start_date) AS event_year"))
             ->orderBy('coupons_order.created_at', 'desc')
             ->get();
             // dd($orderSeller);
@@ -77,12 +77,12 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-
+        
         $request->validate([
             'addmore.*.from' => 'required',
             'addmore.*.to' => 'required',
         ]);
-      
+      dd($request);
         foreach ($request->addmore as $key => $value) {
             $coupon_range_from = $value['from'];
             $coupon_range_to = $value['to'];
@@ -95,14 +95,19 @@ class OrderController extends Controller
             }
         }
         
-        // DB::table('seller_coupons')->insert($data_insert);
+        DB::table('seller_coupons')->insert($data_insert);
         $order_status_Arr = Order::where('id', $request->oid)->first();
 
-        $order_status_Arr->order_status = 1;
+        $order_status_Arr->order_status = '1';
         $order_status_Arr->save();
 
         return redirect()->route('order.index')
             ->with('success', 'Order Approved successfully.');
+    }
+
+    public function checkPrevCoupons(Request $request) {
+        $input = $request;
+        dd($input);
     }
 
     /**
@@ -129,7 +134,7 @@ class OrderController extends Controller
     {
        
         $order = Order::find($id);
-        $order->order_status = 3;
+        $order->order_status = '3';
         $order->save();
 
         return response()->json(['success' => 'Order Delivered successfully']);
@@ -143,7 +148,7 @@ class OrderController extends Controller
     public function destroy($id)
     {
         $book = Order::find($id);
-        $book->order_status = 2;
+        $book->order_status = '2';
         $book->save();
         return response()->json(['success' => 'Order declined Successfully!']);
         return redirect()->route('order.index')

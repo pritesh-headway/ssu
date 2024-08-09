@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Banner;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\Datatables;
+use Yajra\DataTables\Datatables;
 
 
 class BannerController extends Controller
@@ -15,15 +15,13 @@ class BannerController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Banner::all();
+            $data = Banner::all()->where('status', 1);
             return Datatables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
                     $actionBtn = '<a href="' . route("banner.edit", $row->id) . '"
               class="edit btn btn-success btn-sm">Edit</a> 
-              <a href="' . URL("banner/destroy/" . $row->id) . '" 
-              class="delete btn btn-danger btn-sm">Delete
-              </a>';
+              <button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Delete</button>';
                     return $actionBtn;
                 })
                 ->rawColumns(['action'])
@@ -51,7 +49,7 @@ class BannerController extends Controller
         ]);
         $input = $request->all();
         if ($image = $request->file('banner_image')) {
-            $destinationPath = 'public/banner_image/';
+            $destinationPath = 'public/banner_images/';
             $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
             $image->move($destinationPath, $profileImage);
 
@@ -110,7 +108,6 @@ class BannerController extends Controller
      */
     public function destroy($id)
     {
-        // $banner->delete();
         $banner = Banner::find($id);
         $banner->status = 0;
         $banner->save();

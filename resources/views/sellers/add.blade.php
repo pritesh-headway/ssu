@@ -81,7 +81,7 @@
             </div>
             <br />
             <div class="form-group">
-                <input type="file" name="profile_image" class="form-control-file border" required>
+                <input type="file" accept="image/*" name="profile_image" class="form-control-file border" required>
             </div>
             <br />
             <button type="submit" class="btn btn-primary">Submit</button>

@@ -21,19 +21,19 @@
                 <select class="form-control" name="event_id" id="event_id">
                     <option>Select Event Name</option>
                     <?php if($event) { foreach ($event as $key => $value) { ?>
-                    <option value="{{ $value->id }}">{{ $value->event_name }}</option>
+                    <option value="{{ $value->id }}">{{ $value->event_name }} </option>
                     <?php } } ?>
                 </select>
             </div>
             <br />
             <div class="form-group">
                 <label for="exampleInputEmail1">Minimum no. of Coupons</label>
-                <input type="text" class="form-control" id="min_coupons" name="min_coupons" />
+                <input type="text" class="form-control" id="min_coupons" name="min_coupons" required />
             </div>
             <br />
             <div class="form-group">
                 <label for="exampleInputEmail1">Maximum no. of Coupons</label>
-                <input type="text" class="form-control" id="max_coupons" name="max_coupons" />
+                <input type="text" class="form-control" id="max_coupons" name="max_coupons" required />
             </div>
             <br />
             <div class="form-group">

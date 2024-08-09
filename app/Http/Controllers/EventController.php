@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\Datatables;
+use Yajra\DataTables\Datatables;
+use Illuminate\Support\Carbon;
 
 class EventController extends Controller
 {
@@ -14,15 +15,19 @@ class EventController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Event::all();
+            $data = Event::all()->where('status', 1);
             return Datatables::of($data)
+                ->editColumn('start_date', function($data){ 
+                    if($data->start_date) {
+                        $formatedDate = Carbon::createFromFormat('Y-m-d', $data->start_date)->format('Y'); 
+                        return $formatedDate; 
+                    }
+                })
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
                     $actionBtn = '<a href="' . route("event.edit", $row->id) . '"
               class="edit btn btn-success btn-sm">Edit</a> 
-              <a href="' . URL("event/destroy/" . $row->id) . '" 
-              class="delete btn btn-danger btn-sm">Delete
-              </a>';
+              <button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Delete</button>';
                     return $actionBtn;
                 })
                 ->rawColumns(['action'])
@@ -47,6 +52,8 @@ class EventController extends Controller
         $request->validate([
             'event_name' => 'required',
             'prize' => 'required|numeric',
+            'start_date' => 'required|unique:events,start_date',
+            'end_date' => 'required|unique:events,end_date',
             'event_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
         $input = $request->all();
@@ -88,6 +95,8 @@ class EventController extends Controller
         $request->validate([
             'event_name' => 'required',
             'prize' => 'required|numeric',
+            'start_date' => 'required',
+            'end_date' => 'required',
             // 'event_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
         $input = $request->all();

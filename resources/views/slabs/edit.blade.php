@@ -22,7 +22,7 @@
                 <select class="form-control" name="event_id" id="event_id">
                     <option>Select Event Name</option>
                     <?php if($event) { foreach ($event as $key => $value) { ?>
-                    <option value="{{ $value->id }}" {{ $slab->event_name == $value->id ? 'selected' : '' }}>{{
+                    <option value="{{ $value->id }}" {{ $slab->event_id == $value->id ? 'selected' : '' }}>{{
                         $value->event_name }}</option>
                     <?php } } ?>
                 </select>

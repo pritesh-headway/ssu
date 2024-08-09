@@ -40,6 +40,12 @@ Route::post('v1/getEventVideoList', [ApiController::class, 'getEventVideoList'])
 Route::post('v1/getEventImagesList', [ApiController::class, 'getEventImagesList']);
 Route::post('v1/getAssignedCouponslist', [ApiController::class, 'getAssignedCouponslist']);
 Route::post('v1/getCustomerCouponsList', [ApiController::class, 'getCustomerCouponsList']);
+Route::post('v1/getPrizeList', [ApiController::class, 'getPrizeList']);
+Route::post('v1/contactUs', [ApiController::class, 'contactUs']);
+Route::post('v1/downlodDocumentList', [ApiController::class, 'downlodDocumentList']);
+Route::post('v1/billsList', [ApiController::class, 'billsList']);
+Route::post('v1/addBills', [ApiController::class, 'addBills']);
+Route::post('v1/getGeneralData', [ApiController::class, 'getGeneralData']);
 
 //profiles
 Route::post('v1/profile/upload', [ProfileController::class, 'uploadProfileImage']);

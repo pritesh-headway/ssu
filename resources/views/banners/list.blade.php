@@ -27,7 +27,9 @@
 <script src="{{ URL::to('assets/js/jquery-3.js') }}"></script>
 <link href="{{ URL::to('assets/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
 <script src="{{ URL::to('assets/js/jquery.dataTables.min.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
+</script>
 <script src="{{ URL::to('assets/js/dataTables.bootstrap5.min.js') }}"></script>
 <script type="text/javascript">
     $(function() {
@@ -52,7 +54,7 @@
                     data: 'image',
                     name: 'image',
                     "render": function(data, type, full, meta) {
-                        return "<img src=\"public/banner_images/" + data + "\" height=\"50\" width=\"100\"/>";
+                        return "<img src=\"public/banner_images/" + data + "\" height=\"50\" width=\"50\"/>";
                     },
                 },
                 {

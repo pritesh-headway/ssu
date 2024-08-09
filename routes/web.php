@@ -10,6 +10,13 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CustomercouponController;
 use App\Http\Controllers\SlabController;
+use App\Http\Controllers\BillController;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\ContactusController;
+use App\Http\Controllers\PrizeController;
+use App\Http\Controllers\CmsController;
+use App\Http\Controllers\NoticeController;
+use App\Http\Controllers\SocialController;
 use Symfony\Component\HttpFoundation\Request;
 /*
 |--------------------------------------------------------------------------
@@ -23,13 +30,13 @@ use Symfony\Component\HttpFoundation\Request;
 */
 
 /** for side bar menu active */
-function set_active($route)
-{
-    if (is_array($route)) {
-        return in_array(Request::path(), $route) ? 'active' : '';
-    }
-    return Request::path() == $route ? 'active' : '';
-}
+// function set_active($route)
+// {
+//     if (is_array($route)) {
+//         return in_array(Request::path(), $route) ? 'active' : '';
+//     }
+//     return Request::path() == $route ? 'active' : '';
+// }
 
 Route::get('/', function () {
     return view('auth.login');
@@ -51,6 +58,21 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('order', OrderController::class);
     Route::resource('customercoupon', CustomercouponController::class);
     Route::resource('slab', SlabController::class);
+    Route::resource('bill', BillController::class);
+    Route::resource('document', DocumentController::class);
+    Route::resource('contactus', ContactusController::class);
+    Route::resource('prize', PrizeController::class);
+    Route::resource('cms', CmsController::class);
+    Route::resource('notice', NoticeController::class);
+    Route::resource('social', SocialController::class);
+
+    Route::get('social', [SocialController::class, 'index'])->name('social.index');
+    Route::get('notice', [NoticeController::class, 'index'])->name('notice.index');
+    Route::get('cms', [CmsController::class, 'index'])->name('cms.index');
+    Route::get('prize', [PrizeController::class, 'index'])->name('prize.index');
+    Route::get('contactus', [ContactusController::class, 'index'])->name('contactus.index');
+    Route::get('document', [DocumentController::class, 'index'])->name('document.index');
+    Route::get('bill', [BillController::class, 'index'])->name('bill.index');
     Route::get('slab', [SlabController::class, 'index'])->name('slab.index');
     Route::get('customercoupon', [CustomercouponController::class, 'index'])->name('customercoupon.index');
     Route::get('order', [OrderController::class, 'index'])->name('order.index');
@@ -59,6 +81,13 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('coupon', [CouponController::class, 'index'])->name('coupon.index');
     Route::get('event', [EventController::class, 'index'])->name('event.index');
     Route::get('banner', [BannerController::class, 'index'])->name('banner.index');
+
+    // Route::post('checkPrevCoupons', [OrderController::class, 'checkPrevCoupons'])->name('order.checkPrevCoupons');
+    // Route::post('submit-post', [OrderController::class, 'checkPrevCoupons'])->name('checkPrevCoupons');
+    Route::post('ajaxRequest', [OrderController::class, 'checkPrevCoupons'])->name('ajaxRequest.post');
+
+
+
 });
 
 Auth::routes();

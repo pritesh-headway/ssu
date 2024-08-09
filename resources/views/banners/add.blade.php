@@ -25,13 +25,14 @@
             <div class="form-group">
                 <label for="sel1">Select Banner Type:</label>
                 <select class="form-control" id="banner_type" name="banner_type">
+                    <option value="3">Both</option>
                     <option value="1">Desktop</option>
                     <option value="2">Mobile</option>
                 </select>
             </div>
             <br />
             <div class="form-group">
-                <input type="file" name="banner_image" class="form-control-file border" required>
+                <input type="file" accept="image/*" name="banner_image" class="form-control-file border" required>
             </div>
             <br />
             <button type="submit" class="btn btn-primary">Submit</button>
