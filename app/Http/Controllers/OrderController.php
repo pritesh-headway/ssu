@@ -21,10 +21,10 @@ class OrderController extends Controller
             $orderSeller = DB::table('coupons_order')
             ->leftJoin('users', 'users.id', '=', 'coupons_order.user_id')
             ->leftJoin('events', 'events.id', '=', 'coupons_order.event_id')
-            ->select('coupons_order.id','coupons_order.user_id','coupons_order.event_id','coupons_order.quantity','coupons_order.receipt_payment','users.storename',DB::raw("CONCAT(users.name, ' ',users.lname) AS seller_name"),DB::raw("CASE WHEN coupons_order.order_status = '0' THEN 'Pending' WHEN coupons_order.order_status = '1' THEN 'Approved' WHEN coupons_order.order_status = '2' THEN 'Declined' WHEN coupons_order.order_status = '3' THEN 'Delivered' ELSE 'Pending' END AS order_status"),'events.event_name', 'events.event_location',DB::raw("DATE_FORMAT(coupons_order.created_at, '%d-%m-%Y') AS order_date"),DB::raw("YEAR(events.start_date) AS event_year"))
+            ->select('coupons_order.id','coupons_order.user_id','coupons_order.event_id','coupons_order.quantity','coupons_order.receipt_payment','users.storename',DB::raw("CONCAT(users.name, ' ',users.lname) AS seller_name"),DB::raw("CASE WHEN coupons_order.order_status = '0' THEN 'Pending' WHEN coupons_order.order_status = '1' THEN 'Approved' WHEN coupons_order.order_status = '2' THEN 'Declined' WHEN coupons_order.order_status = '3' THEN 'Delivered' ELSE 'Pending' END AS order_status"),'events.event_name', 'events.event_location',DB::raw("DATE_FORMAT(coupons_order.created_at, '%d-%m-%Y') AS order_date"),DB::raw("YEAR(events.start_date) AS event_year"),'coupons_order.reasons')
             ->orderBy('coupons_order.created_at', 'desc')
             ->get();
-            // dd($orderSeller);
+
             return Datatables::of($orderSeller)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
@@ -34,12 +34,11 @@ class OrderController extends Controller
                     } else if($row->order_status == 'Delivered') {
                         $actionBtn = '-';
                     } else if($row->order_status == 'Declined') {
-                        $actionBtn = '<a href="' . route("order.create", 'oid='.base64_encode($row->id).'/'.base64_encode($row->event_id).'/'.base64_encode($row->user_id).'/'.base64_encode($row->quantity)) . '"
-                        class="store btn btn-success btn-sm">Approve</a>';
+                        $actionBtn = '-';
                     } else{
                         $actionBtn = '<a href="' . route("order.create", 'oid='.base64_encode($row->id).'/'.base64_encode($row->event_id).'/'.base64_encode($row->user_id).'/'.base64_encode($row->quantity)) . '"
-                        class="store btn btn-success btn-sm">Approve</a> 
-                        <button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Decline</button>';
+                        class="store btn btn-success btn-sm approve">Approve</a> 
+                        <button class="delete btn btn-danger btn-sm decline" onclick="deleteItem('.$row->id.')">Decline</button>';
                     }
                     return $actionBtn;
                 })
@@ -82,7 +81,37 @@ class OrderController extends Controller
             'addmore.*.from' => 'required',
             'addmore.*.to' => 'required',
         ]);
-      dd($request);
+        $quantity = (int)$request->quantity;
+
+        switch ($quantity) {
+            case 1000:
+                $rewdPoints = 20000;
+                break;
+            case 2000:
+                $rewdPoints = 40000;
+                break;
+            case 3000:
+                $rewdPoints = 60000;
+                break;
+            case 4000:
+                $rewdPoints = 80000;
+                break;
+            case 5000:
+                $rewdPoints = 100000;
+                break;
+            case 6000:
+                $rewdPoints = 120000;
+                break;
+            case 7000:
+                $rewdPoints = 140000;
+                break;
+            case 8000:
+                $rewdPoints = 160000;
+                break;
+            default:
+            $rewdPoints = 0;
+        }
+    //   dd($request);
         foreach ($request->addmore as $key => $value) {
             $coupon_range_from = $value['from'];
             $coupon_range_to = $value['to'];
@@ -101,13 +130,46 @@ class OrderController extends Controller
         $order_status_Arr->order_status = '1';
         $order_status_Arr->save();
 
+        // rewars points
+       
+        $rewarddata = ['points' => $rewdPoints,'event_id'=> $request->event_id, 'user_id' => $request->user_id,'detail' => 'Coupons Purchase'];
+        DB::table('rewards')->insert($rewarddata);
+
         return redirect()->route('order.index')
             ->with('success', 'Order Approved successfully.');
     }
 
     public function checkPrevCoupons(Request $request) {
         $input = $request;
-        dd($input);
+        $from = $input->_fromVal;
+        $to = $input->_toVal;
+        $user_id = $input->_user_id;
+        $event_id = $input->_event_id;
+
+        $coupon_range_from = explode(',', $from);
+        $coupon_range_to = explode(',', $to);
+
+        for ($i = 0; $i < count($coupon_range_from); $i++) {
+            $froms = (int) $coupon_range_from[$i];
+            $tos = (int) $coupon_range_to[$i];
+
+            for ($j = $froms; $j <= $tos; $j++) {
+                $coupon_number[$j] = $j;
+            }
+        }
+
+        $couponListSeller = DB::table('seller_coupons')
+        ->select('seller_coupons.coupon_number')
+        ->where('seller_coupons.user_id', '=', $user_id)
+        ->where('seller_coupons.event_id', '=', $event_id)
+        ->whereIn('seller_coupons.coupon_number', $coupon_number)
+        ->get();
+        // dd(count($couponListSeller));
+        if(count($couponListSeller) == 0) {
+            return response()->json(['status' => true,'message' => 'Coupon allowed']);
+        } else {
+            return response()->json(['status' => false,'message' => 'Coupon already exists for this event']);
+        }
     }
 
     /**
@@ -145,10 +207,11 @@ class OrderController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $book = Order::find($id);
         $book->order_status = '2';
+        $book->reasons = $request->reason;
         $book->save();
         return response()->json(['success' => 'Order declined Successfully!']);
         return redirect()->route('order.index')

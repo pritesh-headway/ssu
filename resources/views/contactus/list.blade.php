@@ -16,7 +16,7 @@
                     <th>First Name</th>
                     <th>Last Name</th>
                     <th>Email Id</th>
-                    <th>Phone Num</th>
+                    <th>Phone Number</th>
                     <th>Message</th>
                 </tr>
             </thead>
@@ -65,8 +65,8 @@
                     name: 'phone'
                 },
                 {
-                    data: 'phone',
-                    name: 'phone'
+                    data: 'message',
+                    name: 'message'
                 },
             ],
             lengthMenu: [25, 50, 100]

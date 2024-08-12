@@ -47,11 +47,13 @@ class PrizeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'event_id' => 'required|not_in:null',
             'prize_name' => 'required',
-            'event_id' => 'required',
             'prize_qty' => 'required|numeric',
             'prize_amount' => 'required|numeric',
-            'prize_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'prize_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5042',
+        ], [
+            'event_id' => 'The event name is required'
         ]);
         $input = $request->all();
         if ($image = $request->file('prize_image')) {
@@ -91,10 +93,12 @@ class PrizeController extends Controller
     public function update(Request $request, Prize $prize)
     {
          $request->validate([
+            'event_id' => 'required|not_in:null',
             'prize_name' => 'required',
-            'event_id' => 'required',
             'prize_qty' => 'required|numeric',
             'prize_amount' => 'required|numeric',
+        ], [
+            'event_id' => 'The event name is required'
         ]);
         $input = $request->all();
         if ($image = $request->file('prize_image')) {

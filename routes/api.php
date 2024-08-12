@@ -46,6 +46,11 @@ Route::post('v1/downlodDocumentList', [ApiController::class, 'downlodDocumentLis
 Route::post('v1/billsList', [ApiController::class, 'billsList']);
 Route::post('v1/addBills', [ApiController::class, 'addBills']);
 Route::post('v1/getGeneralData', [ApiController::class, 'getGeneralData']);
+Route::post('v1/winnerList', [ApiController::class, 'winnerList']);
+Route::post('v1/rewardList', [ApiController::class, 'rewardList']);
+Route::post('v1/sendMessageChat', [ApiController::class, 'sendMessageChat']);
+Route::post('v1/chatList', [ApiController::class, 'chatList']);
+Route::post('v1/messageChatList', [ApiController::class, 'messageChatList']);
 
 //profiles
 Route::post('v1/profile/upload', [ProfileController::class, 'uploadProfileImage']);

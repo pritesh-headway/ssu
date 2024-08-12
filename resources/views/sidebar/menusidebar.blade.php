@@ -51,9 +51,6 @@
                         </button>
                     </a>
                 </li>
-
-
-
                 <li class="nav-item">
                     <ul>
                         <li class="nav-item">
@@ -249,9 +246,10 @@
 
                         <li class="menu nav-item">
 
-                            <button type="button" class="nav-link group {{ request()->is('slab*') ? 'active' : '' }}"
-                                :class="{}" @click="activeDropdown === 'slab' ? activeDropdown = null : activeDropdown =
-                                'slab'">
+                            <button type="button"
+                                class="expnadClass nav-link group {{ request()->is('notice*') ? 'active' : '' }}"
+                                :class="{}" @click="activeDropdown === 'notice' ? activeDropdown = null : activeDropdown =
+                                'notice'">
                                 <div class="flex items-center">
                                     <?xml version="1.0" encoding="utf-8"?><svg version="1.1" id="Layer_1"
                                         xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -265,7 +263,10 @@
                                     <span
                                         class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">General</span>
                                 </div>
-                                <div class="rtl:rotate-180" :class="{'!rotate-90' : activeDropdown === 'slab'}">
+                                <?php 
+                                $expnad = (request()->is('notice*') == 1) ? '!rotate-90' : 'rtl:rotate-180';  
+                                ?>
+                                <div class="{{ $expnad }}" :class="{'!rotate-90' : activeDropdown === 'notice'}">
                                     <svg width="16" height="16" viewbox="0 0 24 24" fill="none"
                                         xmlns="http://www.w3.org/2000/svg">
                                         <path d="M9 5L15 12L9 19" stroke="currentColor" stroke-width="1.5"
@@ -273,7 +274,7 @@
                                     </svg>
                                 </div>
                             </button>
-                            <ul x-cloak="" x-show="activeDropdown === 'slab'" x-collapse=""
+                            <ul x-cloak="" x-show="activeDropdown === 'notice'" x-collapse=""
                                 class="sub-menu text-gray-500">
                                 <li>
                                     <a class="group {{ request()->is('notice*') ? 'active' : '' }}"
@@ -284,14 +285,12 @@
                                         href="{{ route('social.index') }}">Social Links</a>
                                 </li>
                                 <li>
-                                    <a href="Gallery">Gallery</a>
-                                </li>
-                                <li>
-                                    <a href="videos">Videos</a>
+                                    <a class="group {{ request()->is('gallery*') ? 'active' : '' }}"
+                                        href="{{ route('gallery.index') }}">Gallery</a>
                                 </li>
                                 <li>
                                     <a class="group {{ request()->is('cms*') ? 'active' : '' }}"
-                                        href="{{ route('cms.index') }}">Cms</a>
+                                        href="{{ route('cms.index') }}">CMS</a>
                                 </li>
                             </ul>
                         </li>
@@ -303,3 +302,10 @@
         </div>
     </nav>
 </div>
+<?php if(request()->is('notice*') == 1 || request()->is('social*') == 1 || request()->is('cms*') == 1 || request()->is('gallery*') == 1) { ?>
+<script>
+    setTimeout(() => {
+        $(".expnadClass").click()
+    }, 900);
+</script>
+<?php } ?>

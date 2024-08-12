@@ -41,10 +41,10 @@
                     <?php $slotCal = $quantity / 100; ?>
 
                     <td>Slot 1</td>
-                    <td><input type="text" name="addmore[0][from]" id="addmorefrom_0" placeholder="From Coupon"
+                    <td><input type="text" name="addmore[1][from]" id="addmorefrom_1" placeholder="From Coupon"
                             class="form-control from" /></td>
-                    <td><input type="text" name="addmore[0][to]" max="100" placeholder="To Coupon"
-                            class="form-control to" id="addmoreto_0" /></td>
+                    <td><input type="text" name="addmore[1][to]" max="100" placeholder="To Coupon"
+                            class="form-control to" id="addmoreto_1" /></td>
                     <?php $cls =''; if($quantity <= 100) { $cls = 'disabled'; } ?>
                     <td>
                         <button type="button" name="add" id="add" class="btn btn-success" <?php echo $cls ?>>Add
@@ -59,7 +59,7 @@
 </div>
 <script type="text/javascript">
     var i = 0;
-    var k = 0;
+    var k = 1;
     var slot = 1;
     var quantity = '<?php echo $quantity ?>';
     var defaultQty = 100; // plus 100 extra bcoz by default 100 add first
@@ -68,47 +68,88 @@
     var finalFromVal;
     var firstStepVal;
     var SlotAvailable = {{ $slotCal }}
+
+    $(".to").focusout(function(){
+
+        if(parseFloat($(".from").val()) > parseFloat($(".to").val()))
+        {
+            alert("To Coupons value must be greater than From Coupon");
+            $("#Submit").prop('disabled',true);
+            $("#add").prop('disabled', true);
+        }
+        else {
+            $("#Submit").prop('disabled',false);
+            $("#add").prop('disabled', false);
+        }    
+    });
+
     $("#add").click(function(){
         ++i;
-        slot = slot + 1;
+       
         quantity = quantity - defaultQty;
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
-       
-        if($("#addmorefrom_"+k).val() == undefined && $("#addmoreto_"+k).val() == undefined) {
+        console.log(slot, ' ------ ',k, ' ---- ',$("#addmorefrom_"+k).val());
+        if($("#addmorefrom_"+k).val() == undefined && $("#addmoreto_"+k).val() == undefined || $("#addmorefrom_"+k).val() == '' && $("#addmoreto_"+k).val() == '') {
             alert('Please add the coupon number');
             return false;
         } else {
-            console.log($("#addmorefrom_"+k).val() +' '+ $("#addmoreto_"+k).val()+ ' ' +k);
-            k++;
+        
             fromVal = $("#addmorefrom_"+k).val();
             toVal = $("#addmoreto_"+k).val();
-
-            $.ajax({
-                url: "{{ route('ajaxRequest.post') }}",
-                type: 'POST',
-                dataType: "json",
-                cache: false,
-                contentType: 'application/json; charset=utf-8',
-                processData: false,
-                data: {
-                    _fromVal: fromVal,
-                    _toVal: toVal,
-                },
-                success: function(response) {
-                }
-            });
+            isValid = true;
+          
+            finalToVal = toVal - fromVal;
+            // console.log(' ------ ',k);
+            if(defaultQty < finalToVal) { 
+                $("#Submit").prop('disabled', true); 
+                $("#add").prop('disabled', true); 
+                alert('Please add only 100 Coupons in 1 Slot'); 
+                return false; 
+            }
+            
+            if(isValid) {
+                $.ajax({
+                    url: "{{ route('ajaxRequest.post') }}",
+                    type: 'POST',
+                    method: 'POST',
+                    dataType: "json",
+                    async:false,
+                    cache: false,
+                    data: {
+                        _fromVal: fromVal,
+                        _toVal: toVal,
+                        _user_id: {{ $user_id }},
+                        _event_id: {{ $event_id }},
+                    },
+                    success: function(response) {
+                        if(!response.status) {
+                            isValid = false;
+                            $("#addmorefrom_"+k).css('border-color','red');
+                            $("#addmoreto_"+k).css('border-color','red');
+                            alert("Coupons al-ready exist for the sellers acount, Please try another.")
+                            return false;
+                        } else {
+                            $("#addmorefrom_"+k).removeAttr('style');
+                            $("#addmoreto_"+k).removeAttr('style');
+                            slot = slot + 1;
+                            k = k + 1;
+                        }
+                    }
+                });
+            }
         }
 
         if (slot == SlotAvailable) {
+            console.log(slot +'=='+ SlotAvailable);
             $("#add").prop('disabled', true);
         }
-
-        $("#dynamicTable").append('<tr><td>Slot '+slot+'</td> <td><input type="text" id="addmorefrom_'+slot+'" name="addmore['+slot+'][from]" placeholder="From Coupon" class="form-control from" /></td><td><input type="text" name="addmore['+slot+'][to]" id="addmoreto_'+slot+'" placeholder="To Coupon" class="form-control to" /></td><td><button type="button" class="btn btn-danger remove-tr">Remove</button></td></tr>');
-
+        if(isValid) {
+            $("#dynamicTable").append('<tr><td>Slot '+slot+'</td> <td><input type="text" id="addmorefrom_'+slot+'" name="addmore['+slot+'][from]" placeholder="From Coupon" class="form-control from" /></td><td><input type="text" name="addmore['+slot+'][to]" id="addmoreto_'+slot+'" placeholder="To Coupon" class="form-control to" /></td><td><button type="button" class="btn btn-danger remove-tr">Remove</button></td></tr>');
+        }
         if(quantity == 100) {
             $("#add").prop('disabled', true);
         }
@@ -128,31 +169,11 @@
     });  
    
 
-    $('.from').on("input", function() {
-        var dInput = this.value;
-        if(dInput > quantity){
-            $('.from').val('');
-        }
-    });
-
     $('.to').on("input", function() {
         var dInput = this.value;
 
-        finalToVal = $("#"+this.id).val();
-        finalFromVal = $("#"+this.id).val();
-        if(defaultQty < finalToVal) { 
-            $("#Submit").prop('disabled', true); 
-            $("#add").prop('disabled', true); 
-            alert('Please add only 100 coumpons in 1 Slot'); 
-            $('.to').val('');
-            return false; 
-        }
         $("#Submit").prop('disabled', false); 
         $("#add").prop('disabled', false);
-
-        if(dInput > quantity){
-            $('.to').val('');
-        }
     });
 </script>
 @endsection

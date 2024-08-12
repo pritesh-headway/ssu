@@ -50,8 +50,15 @@ class SellerController extends Controller
             'lname' => 'required|string|max:50',
             'storename' => 'required|string|max:100',
             'email' => 'required|string|email|max:255',
-            'phone_number' => 'required|numeric|unique:users',
-            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'phone_number' => 'required|numeric|digits:10|unique:users',
+            'PAN' => 'required',
+            'GST' => 'required',
+            'flatNo' => 'required',
+            'area' => 'required',
+            'city' => 'required',
+            'state' => 'required',
+            'pincode' => 'required',
+            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5042',
         ]);
         $input = $request->all();
 
@@ -107,6 +114,13 @@ class SellerController extends Controller
             'lname' => 'required|string|max:50',
             'storename' => 'required|string|max:100',
             'email' => 'required|string|email|max:255',
+            'PAN' => 'required',
+            'GST' => 'required',
+            'flatNo' => 'required',
+            'area' => 'required',
+            'city' => 'required',
+            'state' => 'required',
+            'pincode' => 'required',
         ]);
         $input = $request->all();
 

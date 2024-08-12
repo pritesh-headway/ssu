@@ -51,10 +51,11 @@ class EventController extends Controller
     {
         $request->validate([
             'event_name' => 'required',
+            'event_description' => 'required',
             'prize' => 'required|numeric',
             'start_date' => 'required|unique:events,start_date',
             'end_date' => 'required|unique:events,end_date',
-            'event_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'event_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5042',
         ]);
         $input = $request->all();
         if ($image = $request->file('event_image')) {
@@ -94,6 +95,7 @@ class EventController extends Controller
     {
         $request->validate([
             'event_name' => 'required',
+            'event_description' => 'required',
             'prize' => 'required|numeric',
             'start_date' => 'required',
             'end_date' => 'required',

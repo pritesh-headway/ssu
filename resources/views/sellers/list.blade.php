@@ -49,15 +49,17 @@
                 },
                 {
                     data: 'name',
-                    name: 'name'
+                    name: 'name',
                 },
                 {
                     data: 'storename',
-                    name: 'storename'
+                    name: 'storename',
                 },
                 {
                     data: 'avatar',
                     name: 'avatar',
+                    orderable: false,
+                    searchable: false,
                     "render": function(data, type, full, meta) {
                         return "<img src=\"profile_images/" + data + "\" height=\"50\" width=\"50\"/>";
                     },
@@ -66,7 +68,7 @@
                     data: 'action',
                     name: 'action',
                     orderable: false,
-                    searchable: false
+                    searchable: false,
                 },
             ],
             lengthMenu: [25, 50, 100]

@@ -17,6 +17,7 @@ use App\Http\Controllers\PrizeController;
 use App\Http\Controllers\CmsController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\SocialController;
+use App\Http\Controllers\GalleryController;
 use Symfony\Component\HttpFoundation\Request;
 /*
 |--------------------------------------------------------------------------
@@ -65,7 +66,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('cms', CmsController::class);
     Route::resource('notice', NoticeController::class);
     Route::resource('social', SocialController::class);
+    Route::resource('gallery', GalleryController::class);
 
+    Route::get('gallery', [GalleryController::class, 'index'])->name('gallery.index');
     Route::get('social', [SocialController::class, 'index'])->name('social.index');
     Route::get('notice', [NoticeController::class, 'index'])->name('notice.index');
     Route::get('cms', [CmsController::class, 'index'])->name('cms.index');
@@ -81,9 +84,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('coupon', [CouponController::class, 'index'])->name('coupon.index');
     Route::get('event', [EventController::class, 'index'])->name('event.index');
     Route::get('banner', [BannerController::class, 'index'])->name('banner.index');
-
-    // Route::post('checkPrevCoupons', [OrderController::class, 'checkPrevCoupons'])->name('order.checkPrevCoupons');
-    // Route::post('submit-post', [OrderController::class, 'checkPrevCoupons'])->name('checkPrevCoupons');
     Route::post('ajaxRequest', [OrderController::class, 'checkPrevCoupons'])->name('ajaxRequest.post');
 
 

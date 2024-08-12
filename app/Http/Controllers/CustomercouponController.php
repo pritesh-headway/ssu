@@ -18,7 +18,7 @@ class CustomercouponController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Customercoupon::select('assign_customer_coupons.customer_id', DB::raw("YEAR(assign_customer_coupons.created_at) AS event_date"), DB::raw("CONCAT(users.name, ' ', users.lname) AS customer_name"), DB::raw("CONCAT(users2.name, ' ', users2.lname) AS assigned_name"), 'users.city', DB::raw("CASE WHEN assign_customer_coupons.assign_type = 1 THEN 'Single' WHEN assign_customer_coupons.assign_type = 2 THEN 'Range' WHEN assign_customer_coupons.assign_type = 3 THEN 'Multiple' ELSE '' END assign_type"), DB::raw("sum(assign_customer_coupons.coupon_number) AS totalCoupon"))
+            $data = Customercoupon::select('assign_customer_coupons.customer_id', DB::raw("YEAR(assign_customer_coupons.created_at) AS event_date"), DB::raw("CONCAT(users.name, ' ', users.lname) AS customer_name"), DB::raw("CONCAT(users2.name, ' ', users2.lname) AS assigned_name"), 'users.city', DB::raw("CASE WHEN assign_customer_coupons.assign_type = 1 THEN 'Single' WHEN assign_customer_coupons.assign_type = 2 THEN 'Range' WHEN assign_customer_coupons.assign_type = 3 THEN 'Multiple' ELSE '' END assign_type"), DB::raw("COUNT(assign_customer_coupons.coupon_number) AS totalCoupon"))
             ->leftJoin('users', 'users.id', '=', 'assign_customer_coupons.customer_id')
             ->leftJoin('users AS users2', 'users2.id', '=', 'assign_customer_coupons.user_id')
             ->leftJoin('events', 'events.id', '=', 'assign_customer_coupons.event_id')

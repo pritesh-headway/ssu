@@ -17,6 +17,7 @@
             @csrf
             <input type="hidden" name="event_id" value="<?php echo $event_id  ?>" />
             <input type="hidden" name="user_id" value="<?php echo $user_id  ?>" />
+            <input type="hidden" name="amount" value="<?php echo $sellecrOrderData->amount  ?>" />
 
             <br />
             <div class="form-group">

@@ -19,6 +19,7 @@
                     <th>Bill Date</th>
                     <th>Payment Verification</th>
                     <th>Order Status</th>
+                    <th>Reasons</th>
                     <th width="105px">Approve/Decline</th>
                 </tr>
             </thead>
@@ -26,7 +27,27 @@
         </table>
     </div>
 </div>
-
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Bill Declined</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <textarea class="form-control" name="reason" id="reason"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary subBtn">Submit</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                    data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
 <link href="{{ URL::to('assets/css/bootstrap.min.css') }}" rel="stylesheet">
 <script src="{{ URL::to('assets/js/jquery-3.js') }}"></script>
 <link href="{{ URL::to('assets/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
@@ -89,6 +110,10 @@
                     }
                 },
                 {
+                    data: 'reasons',
+                    name: 'reasons'
+                },
+                {
                     data: 'action',
                     name: 'action',
                     orderable: false,
@@ -99,12 +124,19 @@
         });
     });
     function deleteItem(id) {
+       $("#exampleModal").modal('show');
+       window.id = id;
+    }
+
+    $(".subBtn").click(function() {
+        var reason = $("#reason").val();
         if (confirm('Are you sure you want to delete this item?')) {
             $.ajax({
-                url: 'bill/' + id,
+                url: 'bill/' + window.id,
                 type: 'DELETE',
                 data: {
-                    _token: '{{ csrf_token() }}'
+                    _token: '{{ csrf_token() }}',
+                    reason: reason
                 },
                 success: function(response) {
                     $('#myTable').DataTable().ajax.reload();
@@ -112,7 +144,7 @@
                 }
             });
         }
-    }
+    })
     function deleveryItem(id) {
         $.ajax({
             url: 'bill/' + id,

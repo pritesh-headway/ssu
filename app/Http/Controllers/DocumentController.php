@@ -56,8 +56,13 @@ class DocumentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'event_id' => 'required|not_in:null',
+            'user_id' =>'required|not_in:null',
             'doc_name' => 'required',
-            'docFile' => 'required|max:2048',
+            'docFile' => 'required|max:5042',
+        ], [
+            'event_id' => 'The event name is required',
+            'user_id' => 'The seller name is required',
         ]);
         $input = $request->all();
         if ($image = $request->file('docFile')) {
@@ -98,7 +103,12 @@ class DocumentController extends Controller
     public function update(Request $request, Document $document)
     {
          $request->validate([
+            'event_id' => 'required|not_in:null',
+            'user_id' =>'required|not_in:null',
             'doc_name' => 'required',
+        ], [
+            'event_id' => 'The event name is required',
+            'user_id' => 'The seller name is required',
         ]);
         $input = $request->all();
         

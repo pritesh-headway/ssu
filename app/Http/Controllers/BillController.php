@@ -17,7 +17,7 @@ class BillController extends Controller
     {
         $base_url = url('/');
         if ($request->ajax()) {
-            $data = Bill::select('id','user_id','event_id','title','amount','detail','file',DB::raw("CASE WHEN bill_status = '0' THEN 'Pending' WHEN bill_status = '1' THEN 'Approved' WHEN bill_status = '2' THEN 'Declined' WHEN bill_status = '3' THEN 'Completed' ELSE 'Pending' END AS bill_status"), DB::raw("DATE_FORMAT(created_at, '%d %M %Y %h:%i %p') AS bill_date"))
+            $data = Bill::select('id','user_id','event_id','title','amount','detail','file',DB::raw("CASE WHEN bill_status = '0' THEN 'Pending' WHEN bill_status = '1' THEN 'Approved' WHEN bill_status = '2' THEN 'Declined' WHEN bill_status = '3' THEN 'Completed' ELSE 'Pending' END AS bill_status"), DB::raw("DATE_FORMAT(created_at, '%d %M %Y %h:%i %p') AS bill_date"),'reasons')
             ->where('status',1)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -25,17 +25,17 @@ class BillController extends Controller
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
                     if($row->bill_status == 'Approved') {
-                        $actionBtn = '<button class="store btn btn-warning btn-sm" onclick="deleveryItem('.$row->id.')">Completed</button>';
+                        $actionBtn = '<button class="store btn btn-warning btn-sm completed" onclick="deleveryItem('.$row->id.')">Completed</button>';
                         return $actionBtn;
                     } else if($row->bill_status == 'Completed') {
-                        $actionBtn = '-';
+                        $actionBtn = ' - ';
                     } else if($row->bill_status == 'Declined') {
-                        $actionBtn = '<a href="' . route("bill.create", 'bid='.base64_encode($row->id).'/'.base64_encode($row->event_id).'/'.base64_encode($row->user_id)) . '"
-                        class="store btn btn-success btn-sm">Approve</a>';
+                        $actionBtn = ' - ';
+                       
                     } else{
                         $actionBtn = '<a href="' . route("bill.create", 'bid='.base64_encode($row->id).'/'.base64_encode($row->event_id).'/'.base64_encode($row->user_id)) . '"
-                        class="store btn btn-success btn-sm">Approve</a> 
-                        <button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Decline</button>';
+                        class="store btn btn-success btn-sm approve">Approve</a> 
+                        <button class="delete btn btn-danger btn-sm decline" onclick="deleteItem('.$row->id.')">Decline</button>';
                     }
                     return $actionBtn;
                 })
@@ -60,6 +60,7 @@ class BillController extends Controller
         ->where('id', '=', $bill_id)
         ->orderBy('created_at', 'desc')
         ->first();
+        // dd($sellecrOrderData->amount);
         return view('bills.add', compact('bill_id','event_id','user_id','sellecrOrderData'));
     }
 
@@ -68,9 +69,8 @@ class BillController extends Controller
      */
     public function store(Request $request)
     {
-
         $request->validate([
-            'receipt' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'receipt' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5042',
         ]);
          
         $bill_Arr = Bill::where('id', $request->bid)->first();
@@ -78,14 +78,14 @@ class BillController extends Controller
             $destinationPath = 'public/bills/';
             $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
             $image->move($destinationPath, $profileImage);
-
-            // $input['receipt'] = "$profileImage";
             $bill_Arr->receipt = $profileImage;
         }
 
-
         $bill_Arr->bill_status = '1';
         $bill_Arr->save();
+
+        $rewarddata = ['points' => (int)$request->amount,'event_id'=> $request->event_id, 'user_id' => $request->user_id,'detail' => 'Deduct for assets'];
+        DB::table('rewards')->insert($rewarddata);
 
         return redirect()->route('bill.index')
             ->with('success', 'Bill Approved successfully.');
@@ -126,10 +126,11 @@ class BillController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $book = Bill::find($id);
         $book->bill_status = '2';
+        $book->reasons = $request->reason;
         $book->save();
         return response()->json(['success' => 'Bill declined Successfully!']);
         return redirect()->route('bill.index')

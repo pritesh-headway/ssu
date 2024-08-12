@@ -16,22 +16,45 @@
                     <th>Seller Name</th>
                     <th>Event Year</th>
                     <th>No. of Coupons</th>
-                    <th>Enquery Date</th>
+                    <th>Enquiry Date</th>
                     <th>Payment Verification</th>
                     <th>Order Status</th>
-                    <th width="105px">Approve/Decline</th>
+                    <th>Reasons</th>
+                    <th width="105px">Action</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
 </div>
-
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Order Declined</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <textarea class="form-control" name="reason" id="reason"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary subBtn">Submit</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                    data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
 <link href="{{ URL::to('assets/css/bootstrap.min.css') }}" rel="stylesheet">
 <script src="{{ URL::to('assets/js/jquery-3.js') }}"></script>
 <link href="{{ URL::to('assets/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
 <script src="{{ URL::to('assets/js/jquery.dataTables.min.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
+</script>
 <script src="{{ URL::to('assets/js/dataTables.bootstrap5.min.js') }}"></script>
 <script type="text/javascript">
     $(function() {
@@ -50,30 +73,32 @@
                 },
                 {
                     data: 'seller_name',
-                    name: 'seller_name'
+                    name: 'seller_name',
                 },
                 {
                     data: 'event_year',
-                    name: 'event_year'
+                    name: 'event_year',
                 },
                 {
                     data: 'quantity',
-                    name: 'quantity'
+                    name: 'quantity',
                 },
                 {
                     data: 'order_date',
-                    name: 'order_date'
+                    name: 'order_date',
                 },
                 {
                     data: 'receipt_payment',
                     name: 'receipt_payment',
                     "render": function(data, type, full, meta) {
-                        return "<a target='_blank' href=\"receipt_images/" + data + "\"><img src=\"receipt_images/" + data + "\" height=\"50\" width=\"100\"/><a/>";
+                        return "<a target='_blank' href=\"receipt_images/" + data + "\"><img src=\"receipt_images/" + data + "\" height=\"50\" width=\"50\"/><a/>";
                     },
                 },
                 {
                     data: 'order_status',
                     name: 'order_status',
+                    orderable: false,
+                    searchable: false,
                     "render": function(data, type, full, meta) {
                         if(data == 'Approved') {
                             return "<span style=\"color:green\" height=\"50\" width=\"100\"/><b>"+data+"</b></span>";
@@ -84,7 +109,11 @@
                         } else if(data == 'Delivered') {
                             return "<span style=\"color:orange\" height=\"50\" width=\"100\"/><b>"+data+"</b></span>";
                         }
-                    }
+                    },
+                },
+                {
+                data: 'reasons',
+                name: 'reasons',
                 },
                 {
                     data: 'action',
@@ -97,12 +126,19 @@
         });
     });
     function deleteItem(id) {
+        $("#exampleModal").modal('show');
+        window.id = id;
+    }
+
+    $(".subBtn").click(function() {
+        var reason = $("#reason").val();
         if (confirm('Are you sure you want to delete this item?')) {
             $.ajax({
                 url: 'order/' + id,
                 type: 'DELETE',
                 data: {
-                    _token: '{{ csrf_token() }}'
+                    _token: '{{ csrf_token() }}',
+                    reasons: reason
                 },
                 success: function(response) {
                     $('#myTable').DataTable().ajax.reload();
@@ -110,7 +146,7 @@
                 }
             });
         }
-    }
+    })
     function deleveryItem(id) {
         $.ajax({
             url: 'order/' + id,

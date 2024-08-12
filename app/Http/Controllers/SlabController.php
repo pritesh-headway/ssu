@@ -47,11 +47,14 @@ class SlabController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request->event_id);
         $request->validate([
-            'event_id' => 'required',
+            'event_id' => 'required|not_in:null',
             'min_coupons' => 'required',
             'max_coupons' => 'required',
             'prize' => 'required|numeric',
+        ], [
+            'event_id' => 'The event name is required'
         ]);
         $input = $request->all();
 
@@ -88,10 +91,12 @@ class SlabController extends Controller
     public function update(Request $request, Slab $slab)
     {
         $request->validate([
-            'name' => 'required|string|max:50',
-            'lname' => 'required|string|max:50',
-            'storename' => 'required|string|max:100',
-            'email' => 'required|string|email|max:255',
+            'event_id' => 'required|not_in:null',
+            'min_coupons' => 'required',
+            'max_coupons' => 'required',
+            'prize' => 'required|numeric',
+        ], [
+            'event_id' => 'The event name is required'
         ]);
         $input = $request->all();
 

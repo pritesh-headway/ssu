@@ -45,7 +45,7 @@ class BannerController extends Controller
     {
         $request->validate([
             'banner_name' => 'required',
-            'banner_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'banner_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5042',
         ]);
         $input = $request->all();
         if ($image = $request->file('banner_image')) {
@@ -85,7 +85,7 @@ class BannerController extends Controller
     {
         $request->validate([
             'banner_name' => 'required',
-            // 'banner_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            // 'banner_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5042',
         ]);
         $input = $request->all();
         if ($image = $request->file('banner_image')) {

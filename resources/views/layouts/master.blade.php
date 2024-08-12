@@ -9,7 +9,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link href="css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{{ asset('css2?family=Nunito:wght@400;500;600;700;800&display=swap') }}" rel="stylesheet">
     <link rel="stylesheet" type="text/css" media="screen" href="{{ asset('assets/css/perfect-scrollbar.min.css') }}">
     <link rel="stylesheet" type="text/css" media="screen" href="{{ asset('assets/css/style.css') }}">
     <link defer="" rel="stylesheet" type="text/css" media="screen" href="{{ asset('assets/css/animate.css') }}">
@@ -1764,17 +1764,16 @@
             if (!isValid) {
                 $("#lblError").html("Only Alphabets allowed.");
             }
- 
             return isValid;
         });
 
         // special character not allowd
         $('.specialcharcterValid').on('keypress', function (event) {
-            var regex = new RegExp("^[a-zA-Z0-9]+$");
+            var regex = new RegExp("^[a-zA-Z0-9_ ]*$");
             var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
             if (!regex.test(key)) {
-            event.preventDefault();
-            return false;
+                event.preventDefault();
+                return false;
             }
         });
 
