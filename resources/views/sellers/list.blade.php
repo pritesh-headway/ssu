@@ -2,6 +2,12 @@
 @section('content')
 <div class="animate__animated p-6" :class="[$store.app.animation]">
     <a style="float: right;" href="{{ route('seller.create')}}" class="btn btn-primary">Add Seller</a>
+    <form action="{{ url('import-users') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="file" name="file"
+            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+        <button type="submit" class="btn btn-primary" style="font-size: 14px;">Import Data</button>
+    </form>
     <div class="container mt-5">
         @if ($message = Session::get('success'))
         <div class="alert alert-success">
@@ -9,6 +15,7 @@
         </div>
         @endif
         <!-- <h2 class="mb-4" style="font-size: 2.0rem;">Events List</h2> -->
+
         <table id="myTable" class="table table-bordered data-table">
             <thead>
                 <tr>
@@ -36,7 +43,7 @@
     $(function() {
         gb_DataTable = $("#myTable").DataTable({
             autoWidth: false,
-            order: [0, "ASC"],
+            order: [0, "DESC"],
             processing: true,
             serverSide: true,
             searchDelay: 2000,
@@ -44,7 +51,7 @@
             ajax: "{{ route('seller.index') }}",
             iDisplayLength: "25",
             columns: [{
-                    data: 'id',
+                    data: 'DT_RowIndex',
                     name: 'id'
                 },
                 {

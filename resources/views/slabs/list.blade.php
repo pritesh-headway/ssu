@@ -36,7 +36,7 @@
     $(function() {
         gb_DataTable = $("#myTable").DataTable({
             autoWidth: false,
-            order: [0, "ASC"],
+            order: [0, "DESC"],
             processing: true,
             serverSide: true,
             searchDelay: 2000,

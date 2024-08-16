@@ -43,8 +43,8 @@ class SocialController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'notice_name' => 'required',
-            'content' => 'required',
+            'social_name' => 'required',
+            'link' => 'required',
         ]);
         $input = $request->all();
         Social::create($input);
@@ -76,8 +76,8 @@ class SocialController extends Controller
     public function update(Request $request, Social $social)
     {
         $request->validate([
-            'notice_name' => 'required',
-            'content' => 'required',
+            'social_name' => 'required',
+            'link' => 'required',
         ]);
         $input = $request->all();
 

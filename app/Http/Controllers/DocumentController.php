@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Datatables;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DocumentController extends Controller
 {
@@ -17,9 +18,11 @@ class DocumentController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Document::all()->where('status', 1);
+            $data = Document::select('documents.id',DB::raw("CONCAT(users.name, ' ', users.lname) AS seller_name"),'documents.doc_name','documents.file')
+            ->leftJoin('users', 'users.id', '=', 'documents.user_id')
+            ->leftJoin('events', 'events.id', '=', 'documents.event_id')->where('documents.status', 1)->get();
             return Datatables::of($data)
-                ->editColumn('start_date', function($data){ 
+                ->editColumn('documents.start_date', function($data){ 
                     if($data->start_date) {
                         $formatedDate = Carbon::createFromFormat('Y-m-d', $data->start_date)->format('Y'); 
                         return $formatedDate; 

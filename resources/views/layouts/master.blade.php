@@ -1786,11 +1786,11 @@
     <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
     <script>
         $("#start_date").datepicker({
-            minDate:'0d',
+            // minDate:'0d',
             dateFormat: "yy-mm-dd"
         });
         $("#end_date").datepicker({
-            minDate:'0d',
+            // minDate:'0d',
             dateFormat: "yy-mm-dd"
         });
     </script>

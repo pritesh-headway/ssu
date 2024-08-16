@@ -35,7 +35,7 @@
     $(function() {
         gb_DataTable = $("#myTable").DataTable({
             autoWidth: false,
-            order: [0, "ASC"],
+            order: [0, "DESC"],
             processing: true,
             serverSide: true,
             searchDelay: 2000,
@@ -75,7 +75,7 @@
     function deleteItem(id) {
         if (confirm('Are you sure you want to delete this item?')) {
             $.ajax({
-                url: 'document/' + id,
+                url: 'gallery/' + id,
                 type: 'DELETE',
                 data: {
                     _token: '{{ csrf_token() }}'

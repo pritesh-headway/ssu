@@ -107,15 +107,15 @@ class ProfileController extends Controller
             ]);
         } else {
             $validator = Validator::make($request->all(), [
-                'fname' => 'required|string|max:255',
-                'email' => 'required|email',
-                'lname' => 'required|string',
+                // 'fname' => 'required|string|max:255',
+                // 'email' => 'required|email',
+                // 'lname' => 'required|string',
                 'mobile' => 'required|string',
-                'flatNo' => 'required|string',
-                'area' => 'required|string',
-                'city' => 'required|string',
-                'state' => 'required|string',
-                'pincode' => 'required|string',
+                // 'flatNo' => 'required|string',
+                // 'area' => 'required|string',
+                // 'city' => 'required|string',
+                // 'state' => 'required|string',
+                // 'pincode' => 'required|string',
                 'user_type' => 'required'
             ]);
         }

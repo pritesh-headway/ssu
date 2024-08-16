@@ -18,7 +18,11 @@ use App\Http\Controllers\CmsController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\SocialController;
 use App\Http\Controllers\GalleryController;
-use Symfony\Component\HttpFoundation\Request;
+use App\Http\Controllers\AssetController;
+// use Symfony\Component\HttpFoundation\Request;
+use Illuminate\Http\Request;
+use App\Imports\UsersImport;
+use Maatwebsite\Excel\Facades\Excel;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -67,7 +71,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('notice', NoticeController::class);
     Route::resource('social', SocialController::class);
     Route::resource('gallery', GalleryController::class);
+    Route::resource('asset', AssetController::class);
 
+    Route::get('asset', [AssetController::class, 'index'])->name('asset.index');
     Route::get('gallery', [GalleryController::class, 'index'])->name('gallery.index');
     Route::get('social', [SocialController::class, 'index'])->name('social.index');
     Route::get('notice', [NoticeController::class, 'index'])->name('notice.index');
@@ -86,7 +92,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('banner', [BannerController::class, 'index'])->name('banner.index');
     Route::post('ajaxRequest', [OrderController::class, 'checkPrevCoupons'])->name('ajaxRequest.post');
 
-
+    Route::post('import-users', function (Request $request) {
+        Excel::import(new UsersImport, $request->file('file'));
+        return back()->with('success', 'Users Imported Successfully');
+    });
 
 });
 

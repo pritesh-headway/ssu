@@ -109,9 +109,7 @@ class SlabController extends Controller
         } else {
             unset($input['avatar']);
         }
-        $input['user_type'] = '2';
-        $input['password'] = Hash::make('123456');
-        $user->update($input);
+        $slab->update($input);
 
         return redirect()->route('slab.index')
             ->with('success', 'Slab updated successfully');

@@ -24,7 +24,7 @@
             </div>
             <ul class="perfect-scrollbar relative h-[calc(100vh-80px)] space-y-0.5 overflow-y-auto overflow-x-hidden p-4 py-0 font-semibold"
                 x-data="{ activeDropdown: 'dashboard' }">
-                <li class="menu nav-item">
+                {{-- <li class="menu nav-item">
                     <a href="{{ URL('home') }}" class="group {{ request()->is('home*') ? 'active' : '' }}">
                         <button type="button" class="nav-link group"
                             :class="{'active' : activeDropdown === 'dashboard'}"
@@ -44,13 +44,12 @@
                                     class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">Dashboard</span>
                             </div>
                             <div class="rtl:rotate-180" :class="{'!rotate-90' : activeDropdown === 'dashboard'}">
-                                <!-- <svg width="16" height="16" viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 5L15 12L9 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> -->
+
                                 </svg>
                             </div>
                         </button>
                     </a>
-                </li>
+                </li> --}}
                 <li class="nav-item">
                     <ul>
                         <li class="nav-item">
@@ -174,6 +173,28 @@
                                     </svg>
                                     <span
                                         class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">Bills
+                                    </span>
+                                </div>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="{{ route('asset.index') }}"
+                                class="group {{ request()->is('asset*') ? 'active' : '' }}">
+                                <div class="flex items-center">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
+                                        </g>
+                                        <g id="SVGRepo_iconCarrier">
+                                            <path
+                                                d="M12.5306 7.90879V5.57711C12.5306 4.59536 12.6609 3 14.3265 3C15.7755 3 16.0816 4.32946 16.0816 5.20895V12.3062H19.0612C19.7006 12.2653 21 12.7358 21 14.2084C21 15.681 19.9388 16.0901 19.0612 16.0901H11.2245V19.3217C11.2245 20.1603 10.9143 20.9662 9.67351 20.9989C8.4327 21.0316 7.95917 20.3444 7.95917 19.3217V11.5904H5.06122C4.12245 11.5904 3 11.2631 3 9.66777C3 8.2974 4.12245 7.82697 5.06122 7.82697H10.3653"
+                                                stroke="#000000" stroke-linecap="round" stroke-linejoin="round"></path>
+                                        </g>
+                                    </svg>
+                                    <span
+                                        class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">Asset
+                                        Order
                                     </span>
                                 </div>
                             </a>

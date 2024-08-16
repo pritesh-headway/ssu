@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Datatables;
+use Illuminate\Support\Facades\DB;
 use Hash;
 
 class SellerController extends Controller
@@ -22,7 +23,9 @@ class SellerController extends Controller
                 ->addColumn('action', function ($row) {
                     $actionBtn = '<a href="' . route("seller.edit", $row->id) . '"
               class="edit btn btn-success btn-sm">Edit</a> 
-              <button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Delete</button>';
+              <button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Delete</button>
+              &nbsp;<a href="' . route("seller.show", $row->id) . '"
+              class="edit btn btn-info btn-sm viewCoupo">View Coupons</a>';
                     return $actionBtn;
                 })
                 ->rawColumns(['action'])
@@ -89,9 +92,21 @@ class SellerController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show(Request $request, $id)
     {
-        return view('sellers.show', compact('user'));
+       
+        $couponsList = DB::table('seller_coupons')
+            ->select('seller_coupons.coupon_number','seller_coupons.is_assign', DB::raw("CASE WHEN seller_coupons.is_assign = 0 THEN 'Available' WHEN seller_coupons.is_assign = 1 THEN 'Assigned'  ELSE 'Available' END is_assign"))
+            ->leftJoin('events', 'events.id', '=', 'seller_coupons.event_id')
+            ->where('seller_coupons.user_id', '=', $id)->get();
+ 
+        if ($request->ajax()) {
+            return Datatables::of($couponsList)
+                ->addIndexColumn()
+                ->make(true);
+        }
+
+        return view('sellers.show', compact('couponsList','id'));
     }
 
     /**

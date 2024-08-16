@@ -14,6 +14,12 @@
             </ul>
         </div>
         @endif
+        @if ($message = Session::get('warning'))
+        <div class="alert alert-warning">
+            <p>{{ $message }}</p>
+        </div>
+        @endif
+
         <form method="POST" action="{{ route('order.store','oid='.$order_id) }}" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="event_id" value="<?php echo $event_id  ?>" />
@@ -29,6 +35,12 @@
                 <?php echo $quantity ?>
             </h6>
             <br />
+            &nbsp;
+            <span><b>NOTE:</b>
+                <span style="color: red">Only 100 coupon numbers are allowed per slot. Please ensure you do not exceed
+                    this limit.
+                </span>
+            </span>
             &nbsp;
             <table class="table table-bordered" id="dynamicTable">
                 <tr>
@@ -69,17 +81,26 @@
     var firstStepVal;
     var SlotAvailable = {{ $slotCal }}
 
+    $("#Submit").click(function() {
+        // console.log(slot +'=='+ SlotAvailable);
+        
+        if (slot != SlotAvailable) {
+            alert('Please add proper unique slot.');
+            return false;
+        }
+    })
+
     $(".to").focusout(function(){
 
         if(parseFloat($(".from").val()) > parseFloat($(".to").val()))
         {
             alert("To Coupons value must be greater than From Coupon");
             $("#Submit").prop('disabled',true);
-            $("#add").prop('disabled', true);
+            // $("#add").prop('disabled', true);
         }
         else {
             $("#Submit").prop('disabled',false);
-            $("#add").prop('disabled', false);
+            // $("#add").prop('disabled', false);
         }    
     });
 
@@ -92,7 +113,7 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
-        console.log(slot, ' ------ ',k, ' ---- ',$("#addmorefrom_"+k).val());
+        // console.log(slot, ' ------ ',k, ' ---- ',$("#addmorefrom_"+k).val());
         if($("#addmorefrom_"+k).val() == undefined && $("#addmoreto_"+k).val() == undefined || $("#addmorefrom_"+k).val() == '' && $("#addmoreto_"+k).val() == '') {
             alert('Please add the coupon number');
             return false;
@@ -130,9 +151,11 @@
                             isValid = false;
                             $("#addmorefrom_"+k).css('border-color','red');
                             $("#addmoreto_"+k).css('border-color','red');
+                            $("#Submit").prop('disabled', true);
                             alert("Coupons al-ready exist for the sellers acount, Please try another.")
                             return false;
                         } else {
+                            $("#Submit").prop('disabled', false);
                             $("#addmorefrom_"+k).removeAttr('style');
                             $("#addmoreto_"+k).removeAttr('style');
                             slot = slot + 1;
@@ -142,17 +165,14 @@
                 });
             }
         }
-
+        console.log(slot +' slot '+ SlotAvailable);
         if (slot == SlotAvailable) {
-            console.log(slot +'=='+ SlotAvailable);
             $("#add").prop('disabled', true);
         }
         if(isValid) {
             $("#dynamicTable").append('<tr><td>Slot '+slot+'</td> <td><input type="text" id="addmorefrom_'+slot+'" name="addmore['+slot+'][from]" placeholder="From Coupon" class="form-control from" /></td><td><input type="text" name="addmore['+slot+'][to]" id="addmoreto_'+slot+'" placeholder="To Coupon" class="form-control to" /></td><td><button type="button" class="btn btn-danger remove-tr">Remove</button></td></tr>');
         }
-        if(quantity == 100) {
-            $("#add").prop('disabled', true);
-        }
+        // console.log(quantity +' quantity '+ quantity);
 
         $("#Submit").prop('disabled', false);
     });

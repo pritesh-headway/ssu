@@ -155,7 +155,7 @@ class GalleryController extends Controller
     public function destroy($id)
     {
         $banner = Gallery::find($id);
-        $banner->status = 0;
+        $banner->status = '0';
         $banner->save();
         return response()->json(['success' => 'Gallery deleted Successfully!']);
         return redirect()->route('gallery.index')

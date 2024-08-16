@@ -19,7 +19,7 @@ class BillController extends Controller
         if ($request->ajax()) {
             $data = Bill::select('id','user_id','event_id','title','amount','detail','file',DB::raw("CASE WHEN bill_status = '0' THEN 'Pending' WHEN bill_status = '1' THEN 'Approved' WHEN bill_status = '2' THEN 'Declined' WHEN bill_status = '3' THEN 'Completed' ELSE 'Pending' END AS bill_status"), DB::raw("DATE_FORMAT(created_at, '%d %M %Y %h:%i %p') AS bill_date"),'reasons')
             ->where('status',1)
-            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->get();
             return Datatables::of($data)
                 ->addIndexColumn()
@@ -84,8 +84,8 @@ class BillController extends Controller
         $bill_Arr->bill_status = '1';
         $bill_Arr->save();
 
-        $rewarddata = ['points' => (int)$request->amount,'event_id'=> $request->event_id, 'user_id' => $request->user_id,'detail' => 'Deduct for assets'];
-        DB::table('rewards')->insert($rewarddata);
+        // $rewarddata = ['points' => (int)$request->amount,'event_id'=> $request->event_id, 'user_id' => $request->user_id,'detail' => 'Deduct for assets', 'transaction_type' => '2'];
+        // DB::table('rewards')->insert($rewarddata);
 
         return redirect()->route('bill.index')
             ->with('success', 'Bill Approved successfully.');
@@ -130,7 +130,7 @@ class BillController extends Controller
     {
         $book = Bill::find($id);
         $book->bill_status = '2';
-        $book->reasons = $request->reason;
+        $book->reasons = $request->reasons;
         $book->save();
         return response()->json(['success' => 'Bill declined Successfully!']);
         return redirect()->route('bill.index')

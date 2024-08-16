@@ -20,7 +20,7 @@
                     <th>Payment Verification</th>
                     <th>Order Status</th>
                     <th>Reasons</th>
-                    <th width="105px">Approve/Decline</th>
+                    <th width="105px">Actions</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -60,7 +60,7 @@
     $(function() {
         gb_DataTable = $("#myTable").DataTable({
             autoWidth: false,
-            order: [0, "ASC"],
+            order: [4, "DESC"],
             processing: true,
             serverSide: true,
             searchDelay: 2000,
@@ -130,19 +130,24 @@
 
     $(".subBtn").click(function() {
         var reason = $("#reason").val();
-        if (confirm('Are you sure you want to delete this item?')) {
-            $.ajax({
-                url: 'bill/' + window.id,
-                type: 'DELETE',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    reason: reason
-                },
-                success: function(response) {
-                    $('#myTable').DataTable().ajax.reload();
-                    alert(response.success);
-                }
-            });
+        if(reason) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                $.ajax({
+                    url: 'bill/' + window.id,
+                    type: 'DELETE',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        reasons: reason
+                    },
+                    success: function(response) {
+                        $("#exampleModal").modal('hide');
+                        $('#myTable').DataTable().ajax.reload();
+                        alert(response.success);
+                    }
+                });
+            }
+        } else {
+            $("#reason").css('border-color','red');
         }
     })
     function deleveryItem(id) {

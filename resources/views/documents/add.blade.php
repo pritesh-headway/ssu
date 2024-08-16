@@ -36,8 +36,7 @@
             <br />
             <div class="form-group">
                 <label for="exampleInputEmail1">Document Name</label>
-                <input type="text" class="form-control character" id="doc_name" name="doc_name"
-                    aria-describedby="emailHelp">
+                <input type="text" class="form-control " id="doc_name" name="doc_name" aria-describedby="emailHelp">
                 @error('doc_name')
                 <span class="text-danger">{{ $message }}</span>
                 @enderror

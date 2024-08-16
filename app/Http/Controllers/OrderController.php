@@ -7,10 +7,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Datatables;
 use Illuminate\Support\Facades\DB;
+use App\Services\FcmNotificationService;
 use Hash;
 
 class OrderController extends Controller
 {
+    protected $fcmNotificationService;
+
+    public function __construct(FcmNotificationService $fcmNotificationService)
+    {
+        $this->fcmNotificationService = $fcmNotificationService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -22,14 +29,15 @@ class OrderController extends Controller
             ->leftJoin('users', 'users.id', '=', 'coupons_order.user_id')
             ->leftJoin('events', 'events.id', '=', 'coupons_order.event_id')
             ->select('coupons_order.id','coupons_order.user_id','coupons_order.event_id','coupons_order.quantity','coupons_order.receipt_payment','users.storename',DB::raw("CONCAT(users.name, ' ',users.lname) AS seller_name"),DB::raw("CASE WHEN coupons_order.order_status = '0' THEN 'Pending' WHEN coupons_order.order_status = '1' THEN 'Approved' WHEN coupons_order.order_status = '2' THEN 'Declined' WHEN coupons_order.order_status = '3' THEN 'Delivered' ELSE 'Pending' END AS order_status"),'events.event_name', 'events.event_location',DB::raw("DATE_FORMAT(coupons_order.created_at, '%d-%m-%Y') AS order_date"),DB::raw("YEAR(events.start_date) AS event_year"),'coupons_order.reasons')
-            ->orderBy('coupons_order.created_at', 'desc')
+            ->orderBy('coupons_order.id', 'desc')
             ->get();
 
             return Datatables::of($orderSeller)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
                     if($row->order_status == 'Approved') {
-                        $actionBtn = '<button class="store btn btn-warning btn-sm" onclick="deleveryItem('.$row->id.')">Deliver</button>';
+                        $actionBtn = '-';
+                        //<button class="store btn btn-warning btn-sm" onclick="deleveryItem('.$row->id.')">Deliver</button>
                         return $actionBtn;
                     } else if($row->order_status == 'Delivered') {
                         $actionBtn = '-';
@@ -82,7 +90,7 @@ class OrderController extends Controller
             'addmore.*.to' => 'required',
         ]);
         $quantity = (int)$request->quantity;
-
+        $slotCal = $quantity / 100;
         switch ($quantity) {
             case 1000:
                 $rewdPoints = 20000;
@@ -116,27 +124,44 @@ class OrderController extends Controller
             $coupon_range_from = $value['from'];
             $coupon_range_to = $value['to'];
 
-            $from = (int)$coupon_range_from;
-            $to = (int)$coupon_range_to;
-            // "Looping from $from to $to:\n";
-            for ($j = $from; $j <= $to; $j++) {
-                $data_insert[] = ['coupon_number' => $j,'event_id' => $request->event_id,'user_id' => $request->user_id];
-            }
+            $from[] = (int)$coupon_range_from;
+            $to[] = (int)$coupon_range_to;
         }
+        $totalFromQty = array_sum($from);
+        $totalToQty = array_sum($to);
+        $diff = ($totalToQty - $totalFromQty) + $slotCal;
+        // echo $diff .'=='. $quantity;die;
+        if($diff == $quantity) {
+            foreach ($request->addmore as $key => $value) {
+                $coupon_range_from = $value['from'];
+                $coupon_range_to = $value['to'];
+
+                $from = (int)$coupon_range_from;
+                $to = (int)$coupon_range_to;
+                $diff = ($from - $to) - 1;
+                // "Looping from $from to $to:\n";
+                for ($j = $from; $j <= $to; $j++) {
+                    $data_insert[] = ['coupon_number' => $j,'event_id' => $request->event_id,'user_id' => $request->user_id];
+                }
+            }
         
-        DB::table('seller_coupons')->insert($data_insert);
-        $order_status_Arr = Order::where('id', $request->oid)->first();
+            DB::table('seller_coupons')->insert($data_insert);
+            $order_status_Arr = Order::where('id', $request->oid)->first();
 
-        $order_status_Arr->order_status = '1';
-        $order_status_Arr->save();
+            $order_status_Arr->order_status = '1';
+            $order_status_Arr->save();
 
-        // rewars points
-       
-        $rewarddata = ['points' => $rewdPoints,'event_id'=> $request->event_id, 'user_id' => $request->user_id,'detail' => 'Coupons Purchase'];
-        DB::table('rewards')->insert($rewarddata);
+            // rewars points
+            $rewarddata = ['points' => $rewdPoints,'event_id'=> $request->event_id, 'user_id' => $request->user_id,'detail' => 'Coupons Purchase'];
+            DB::table('rewards')->insert($rewarddata);
 
-        return redirect()->route('order.index')
+            return redirect()->route('order.index')
             ->with('success', 'Order Approved successfully.');
+
+        } else {
+            return redirect()->route("order.create", 'oid='.base64_encode($request->oid).'/'.base64_encode($request->event_id).'/'.base64_encode($request->user_id).'/'.base64_encode($quantity))
+            ->with('warning', 'Order Quantity Mismatch!. Please add proper Quantity.');
+        }
     }
 
     public function checkPrevCoupons(Request $request) {
@@ -160,7 +185,7 @@ class OrderController extends Controller
 
         $couponListSeller = DB::table('seller_coupons')
         ->select('seller_coupons.coupon_number')
-        ->where('seller_coupons.user_id', '=', $user_id)
+        // ->where('seller_coupons.user_id', '=', $user_id)
         ->where('seller_coupons.event_id', '=', $event_id)
         ->whereIn('seller_coupons.coupon_number', $coupon_number)
         ->get();
@@ -199,6 +224,16 @@ class OrderController extends Controller
         $order->order_status = '3';
         $order->save();
 
+        $body = array('receiver_id' => $order->user_id,'title' => 'Order Status' ,'message' => 'Order Delivered Successfully','content_available' => true);
+
+        $sendNotification = $this->fcmNotificationService->sendFcmNotification($body);
+        $notifData = json_decode($sendNotification->getContent(), true);
+        if (isset($notifData['status']) && $notifData['status'] == true) {
+            $sendNotification->getContent();
+        } else {
+            $sendNotification->getContent();
+        }
+        
         return response()->json(['success' => 'Order Delivered successfully']);
         return redirect()->route('order.index')
             ->with('success', 'Order Delivered successfully');
@@ -209,10 +244,22 @@ class OrderController extends Controller
      */
     public function destroy(Request $request, $id)
     {
+
         $book = Order::find($id);
         $book->order_status = '2';
-        $book->reasons = $request->reason;
+        $book->reasons = $request->reasons;
         $book->save();
+
+        $body = array('receiver_id' => $book->user_id,'title' => 'Order Status' ,'message' => 'Order Declined Successfully','content_available' => true);
+
+        $sendNotification = $this->fcmNotificationService->sendFcmNotification($body);
+        $notifData = json_decode($sendNotification->getContent(), true);
+        if (isset($notifData['status']) && $notifData['status'] == true) {
+            $sendNotification->getContent();
+        } else {
+            $sendNotification->getContent();
+        }
+
         return response()->json(['success' => 'Order declined Successfully!']);
         return redirect()->route('order.index')
             ->with('success', 'Order declined successfully');

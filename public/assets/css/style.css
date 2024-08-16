@@ -20,3 +20,11 @@ button.store.btn.btn-warning.btn-sm.completed {
 .hide {
     display: none;
 }
+
+
+a.edit.btn.btn-info.btn-sm.viewCoupo {
+    font-size: 10px;
+    margin: 3px 0px;
+    color: #fff;
+    width: 88px;
+}

@@ -32,8 +32,11 @@ return [
     ],
 
     'api' => [
-        'base_url' => env('API_BASE_URL', 'fdgdfgfd'),
+        'base_url' => env('API_BASE_URL', ''),
         'api_key' => env('API_KEY'),
+    ],
+    'fcm' => [
+        'project_id' => env('FCM_PROJECT_ID'),
     ],
 
 ];

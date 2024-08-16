@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\cms;
+use App\Models\Cms;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Datatables;
 
@@ -20,8 +20,8 @@ class CmsController extends Controller
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
                     $actionBtn = '<a href="' . route("cms.edit", $row->id) . '"
-              class="edit btn btn-success btn-sm">Edit</a> 
-              <button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Delete</button>';
+              class="edit btn btn-success btn-sm">Edit</a> ';
+              //<button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Delete</button>
                     return $actionBtn;
                 })
                 ->rawColumns(['action'])
@@ -74,16 +74,19 @@ class CmsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Cms $cms)
+    public function update(Request $request, $id)
     {
         $request->validate([
             'page_name' => 'required',
             'content' => 'required',
         ]);
         $input = $request->all();
-
-        $cms->update($input);
-
+        
+        $cms = Cms::find($id);
+        $cms->page_name = $request->page_name;
+        $cms->content = $request->content;
+        $cms->save();
+        // dd($request);
         return redirect()->route('cms.index')
             ->with('success', 'Cms updated successfully');
     }
