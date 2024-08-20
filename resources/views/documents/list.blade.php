@@ -14,6 +14,7 @@
                 <tr>
                     <th>No</th>
                     <th>Document Name</th>
+                    <th>Seller Name</th>
                     <th>File</th>
                     <th width="105px">Action</th>
                 </tr>

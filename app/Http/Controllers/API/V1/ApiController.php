@@ -820,6 +820,7 @@ class ApiController extends Controller
                 'event_id' => $request->input('event_id'),
                 'customer_id' => ($request->customer_id != '0') ? $request->customer_id : $last_insert_id,
                 'coupon_number' => $request->input('coupon_number'),
+                'created_at' => date('Y-m-d H:i:s')
             ];
             $coupons_check_assigned = (array)$data_insert['coupon_number'];
         } else if ($request->input('assign_type') == 2) {
@@ -841,6 +842,7 @@ class ApiController extends Controller
                         'user_id' => $request->input('user_id'),
                         'customer_id' => ($request->customer_id != '0') ? $request->customer_id : $last_insert_id,
                         'coupon_number' => $j,
+                        'created_at' => date('Y-m-d H:i:s')
                     ];
                 }
             }
@@ -855,6 +857,7 @@ class ApiController extends Controller
                     'event_id' => $request->input('event_id'),
                     'customer_id' => ($request->customer_id != '0') ? $request->customer_id : $last_insert_id,
                     'coupon_number' => $value,
+                    'created_at' => date('Y-m-d H:i:s')
                 ];
             }
             $coupons_check_assigned = array_column($data_insert, 'coupon_number');
@@ -1089,6 +1092,7 @@ class ApiController extends Controller
                 'user_id' => $request->user_id,
                 'quantity' => $request->quantity,
                 'event_id' => $request->event_id,
+                'created_at' => date('Y-m-d H:i:s')
             ];
             $order_id = DB::table('coupons_order')->insertGetId($arr);
 
@@ -1623,8 +1627,17 @@ class ApiController extends Controller
         ->groupBy('rewards.user_id')
         ->paginate($this->per_page_show, ['*'], 'page', $page_number);
 
+        $rewardsHistory = Reward::where('rewards.status', '=', 1)
+        ->select('rewards.id', 'rewards.user_id', 'rewards.event_id', 'rewards.points', DB::raw("CONCAT(users2.name, ' ', users2.lname) AS seller_name"), DB::raw("CASE WHEN rewards.transaction_type = 1 THEN 'Credited' WHEN rewards.transaction_type = 2 THEN 'Debited' ELSE '' END transaction_type"), DB::raw("DATE_FORMAT(rewards.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("rewards.detail AS details"), DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->profile_path . "', avatar),'') AS avatar"), DB::raw("0 AS totalPoints"), DB::raw("0 AS leftPoints"))
+        ->leftJoin('users AS users2', 'users2.id', '=', 'rewards.user_id')
+        ->leftJoin('events', 'events.id', '=', 'rewards.event_id')
+        ->where('rewards.user_id', '=', $user_id)
+        ->where('rewards.event_id', '=', $event_id)
+        ->paginate($this->per_page_show, ['*'], 'page', $page_number);
+       
         $rewardData = ['total_points' => isset($rewardsList[0]) ? $rewardsList[0]->totalPoints : 0, 'left_points' =>  isset($rewardsList[0]) ? $rewardsList[0]->leftPoints : 0];
-
+        $finalData = $rewardsList->merge($rewardsHistory); 
+        // dd($finalData);
         $pagination = [
             'total' => $rewardsList->total(),
             'count' => $rewardsList->count(),
@@ -1635,7 +1648,7 @@ class ApiController extends Controller
         $rwdListData = [
             'pagination' => $pagination,
             'reward_data' => $rewardData,
-            'data' => $rewardsList,
+            'data' => $finalData,
         ];
 
         return response()->json(['status' => true, 'message' => 'Get Rewards list successfully', 'data' => $rwdListData], 200);

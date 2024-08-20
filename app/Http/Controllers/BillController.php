@@ -84,9 +84,6 @@ class BillController extends Controller
         $bill_Arr->bill_status = '1';
         $bill_Arr->save();
 
-        // $rewarddata = ['points' => (int)$request->amount,'event_id'=> $request->event_id, 'user_id' => $request->user_id,'detail' => 'Deduct for assets', 'transaction_type' => '2'];
-        // DB::table('rewards')->insert($rewarddata);
-
         return redirect()->route('bill.index')
             ->with('success', 'Bill Approved successfully.');
     }

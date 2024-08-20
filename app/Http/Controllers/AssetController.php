@@ -109,7 +109,7 @@ class AssetController extends Controller
         $order->amount = $request->amount;
         $order->save();
 
-        $rewarddata = ['points' => (int)$request->amount,'event_id'=> $order->event_id, 'user_id' => $order->user_id,'detail' => 'Deduct for '.$order->title, 'transaction_type' => '2'];
+        $rewarddata = ['points' => (int)$request->amount,'event_id'=> $order->event_id, 'user_id' => $order->user_id,'detail' => 'Deduct for '.$order->title, 'transaction_type' => '2', 'created_at' => date('Y-m-d H:i:s')];
         DB::table('rewards')->insert($rewarddata);
 
 

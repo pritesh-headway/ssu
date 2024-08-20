@@ -98,26 +98,8 @@ class OrderController extends Controller
             case 2000:
                 $rewdPoints = 40000;
                 break;
-            case 3000:
-                $rewdPoints = 60000;
-                break;
-            case 4000:
-                $rewdPoints = 80000;
-                break;
-            case 5000:
-                $rewdPoints = 100000;
-                break;
-            case 6000:
-                $rewdPoints = 120000;
-                break;
-            case 7000:
-                $rewdPoints = 140000;
-                break;
-            case 8000:
-                $rewdPoints = 160000;
-                break;
             default:
-            $rewdPoints = 0;
+            $rewdPoints = $quantity * 20;
         }
     //   dd($request);
         foreach ($request->addmore as $key => $value) {
@@ -127,6 +109,18 @@ class OrderController extends Controller
             $from[] = (int)$coupon_range_from;
             $to[] = (int)$coupon_range_to;
         }
+
+        $arr_unique_from = array_unique($from);
+        
+        $check_from = count($from) !== count($arr_unique_from);
+        $arr_unique_to = array_unique($to);
+        $check_to = count($from) !== count($arr_unique_to);
+        if($check_from == 1 || $check_to == 1) {
+            return redirect()->route("order.create", 'oid='.base64_encode($request->oid).'/'.base64_encode($request->event_id).'/'.base64_encode($request->user_id).'/'.base64_encode($quantity))
+            ->with('warning', 'Duplicate Coupon Number Found!. Please add proper coupons.');
+        }
+
+
         $totalFromQty = array_sum($from);
         $totalToQty = array_sum($to);
         $diff = ($totalToQty - $totalFromQty) + $slotCal;
@@ -141,7 +135,7 @@ class OrderController extends Controller
                 $diff = ($from - $to) - 1;
                 // "Looping from $from to $to:\n";
                 for ($j = $from; $j <= $to; $j++) {
-                    $data_insert[] = ['coupon_number' => $j,'event_id' => $request->event_id,'user_id' => $request->user_id];
+                    $data_insert[] = ['coupon_number' => $j,'event_id' => $request->event_id,'user_id' => $request->user_id, 'created_at' => date('Y-m-d H:i:s')];
                 }
             }
         
@@ -149,10 +143,11 @@ class OrderController extends Controller
             $order_status_Arr = Order::where('id', $request->oid)->first();
 
             $order_status_Arr->order_status = '1';
+            $order_status_Arr->created_at = date('Y-m-d H:i:s');
             $order_status_Arr->save();
 
             // rewars points
-            $rewarddata = ['points' => $rewdPoints,'event_id'=> $request->event_id, 'user_id' => $request->user_id,'detail' => 'Coupons Purchase'];
+            $rewarddata = ['points' => $rewdPoints,'event_id'=> $request->event_id, 'user_id' => $request->user_id,'detail' => 'Coupons Purchase', 'created_at' => date('Y-m-d H:i:s')];
             DB::table('rewards')->insert($rewarddata);
 
             return redirect()->route('order.index')
