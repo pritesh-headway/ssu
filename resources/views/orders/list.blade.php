@@ -90,6 +90,8 @@
                 {
                     data: 'receipt_payment',
                     name: 'receipt_payment',
+                    orderable: false,
+                    searchable: false,
                     "render": function(data, type, full, meta) {
                         return "<a target='_blank' href=\"receipt_images/" + data + "\"><img src=\"receipt_images/" + data + "\" height=\"50\" width=\"50\"/><a/>";
                     },
@@ -143,8 +145,9 @@
                     },
                     success: function(response) {
                         $("#exampleModal").modal('hide');
+                        $("#reason").val('');
                         $('#myTable').DataTable().ajax.reload();
-                        alert(response.success);
+                        // alert(response.success);
                     }
                 });
             }

@@ -61,7 +61,7 @@
                     "render": function ( data, type, row ) {
                         console.log(row.start_date);
                         
-                        return data +' '+ row.start_date+' ' ;
+                        return data  ;
                     },
                 },
                 {

@@ -39,6 +39,7 @@
             processing: true,
             serverSide: true,
             searchDelay: 2000,
+            pageLength: 25,
             paging: true,
             ajax: "{{ route('gallery.index') }}",
             iDisplayLength: "25",

@@ -38,6 +38,7 @@
             processing: true,
             serverSide: true,
             searchDelay: 2000,
+            pageLength: 25,
             paging: true,
             ajax: "{{ route('seller.show', $id) }}",
             iDisplayLength: "25",
@@ -54,9 +55,9 @@
                     name: 'is_assign',
                 }
             ],
-            lengthMenu: [25, 50, 100]
+            lengthMenu: [25, 50, 100],
         });
+       
     });
-
 </script>
 @endsection

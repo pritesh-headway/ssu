@@ -17,7 +17,7 @@ class AssetController extends Controller
     {
         $base_url = url('/');
         if ($request->ajax()) {
-            $data = Asset::select('id','user_id','event_id','title','detail', DB::raw("CASE WHEN order_status = '0' THEN 'Pending' WHEN order_status = '1' THEN 'Approved' ELSE '' END order_status"), DB::raw("DATE_FORMAT(created_at, '%d %M %Y %h:%i %p') AS bill_date"),"quantity","amount")
+            $data = Asset::select('id','user_id','event_id','title','detail', DB::raw("CASE WHEN order_status = '0' THEN 'Pending' WHEN order_status = '1' THEN 'Approved' WHEN order_status = '2' THEN 'Declined' ELSE '' END order_status"), DB::raw("DATE_FORMAT(created_at, '%d %M %Y %h:%i %p') AS bill_date"),"quantity","amount","reasons")
             ->where('status',1)
             ->orderBy('id', 'desc')
             ->get();
@@ -29,10 +29,12 @@ class AssetController extends Controller
                         return $actionBtn;
                     } else if($row->order_status == 'Completed') {
                         $actionBtn = ' - ';
-                    } else{
+                    } else if($row->order_status == 'Declined') {
+                        $actionBtn = ' Declined ';
+                    }else{
                         $actionBtn = '
                         <button class="store btn btn-success btn-sm approve" onclick="approveItem('.$row->id.')">Approve</button>
-                        ';
+                        <button class="delete btn btn-danger btn-sm decline" onclick="deleteItem('.$row->id.')">Decline</button>';
                     }
                     return $actionBtn;
                 })

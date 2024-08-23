@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Hash;
+use Illuminate\Support\Facades\DB;
 
 class ProfileController extends Controller
 {
@@ -34,8 +35,11 @@ class ProfileController extends Controller
         }
         $base_url =  $this->base_url; 
         $token = $request->header('token');
-        $user = User::where('remember_token', $token)->first();
-        if($user == '' || $user == null) {
+         $user = DB::table('user_devices')
+            ->where('user_devices.login_token', '=', $token)
+            ->where('user_devices.status', '=', 1)
+            ->count();
+        if ($user == '' || $user == null || $user == 0) {
             $result['status'] = false;
             $result['message'] = "Token given is invalid, Please login again.";
             $result['data'] = (object)[];
@@ -78,8 +82,11 @@ class ProfileController extends Controller
         $token = $request->header('token');
         $user_id = $request->user_id;
         $base_url =  $this->base_url; 
-        $user = User::where('remember_token', $token)->first();
-        if($user == '' || $user == null) {
+        $user = DB::table('user_devices')
+            ->where('user_devices.login_token', '=', $token)
+            ->where('user_devices.status', '=', 1)
+            ->count();
+        if ($user == '' || $user == null || $user == 0) {
             $result['status'] = false;
             $result['message'] = "Token given is invalid, Please login again.";
             $result['data'] = (object)[];
@@ -189,8 +196,12 @@ class ProfileController extends Controller
         }
         $base_url =  $this->base_url; 
         $token = $request->header('token');
-        $user = User::where('remember_token', $token)->first();
-        if($user == '' || $user == null) {
+        $user = DB::table('user_devices')
+            ->where('user_devices.login_token', '=', $token)
+            ->where('user_devices.status', '=', 1)
+            ->count();
+        // dd($user);
+        if ($user == '' || $user == null || $user == 0) {
             $result['status'] = false;
             $result['message'] = "Token given is invalid, Please login again.";
             $result['data'] = (object)[];

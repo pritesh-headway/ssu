@@ -23,7 +23,7 @@ class UsersImport implements ToModel, WithHeadingRow
             'area'     => $row['street_area'],
             'city'     => $row['city'],
             'state'     => $row['state'],
-            'state'     => $row['pincode'],
+            'pincode'     => $row['pincode'],
             'user_type'     => 2,
             'is_first_time'     => 1,
             'password' => Hash::make(123456),

@@ -19,6 +19,8 @@ use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\SocialController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\AssetController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\BroadcastController;
 // use Symfony\Component\HttpFoundation\Request;
 use Illuminate\Http\Request;
 use App\Imports\UsersImport;
@@ -48,12 +50,11 @@ Route::get('/', function () {
 });
 
 Route::group(['middleware' => 'auth'], function () {
-    Route::get('home', function () {
-        return view('home');
-    });
-    Route::get('home', function () {
-        return view('home');
-    });
+    // Route::get('home', function () {
+    //     return view('home');
+    // });
+      Route::get('home', [HomeController::class, 'index'])->name('home.index');
+
 
     Route::resource('banner', BannerController::class);
     Route::resource('event', EventController::class);
@@ -72,7 +73,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('social', SocialController::class);
     Route::resource('gallery', GalleryController::class);
     Route::resource('asset', AssetController::class);
+    Route::resource('broadcast', BroadcastController::class);
 
+    Route::get('broadcast', [BroadcastController::class, 'index'])->name('broadcast.index');
     Route::get('asset', [AssetController::class, 'index'])->name('asset.index');
     Route::get('gallery', [GalleryController::class, 'index'])->name('gallery.index');
     Route::get('social', [SocialController::class, 'index'])->name('social.index');

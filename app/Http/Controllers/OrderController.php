@@ -147,7 +147,7 @@ class OrderController extends Controller
             $order_status_Arr->save();
 
             // rewars points
-            $rewarddata = ['points' => $rewdPoints,'event_id'=> $request->event_id, 'user_id' => $request->user_id,'detail' => 'Coupons Purchase', 'created_at' => date('Y-m-d H:i:s')];
+            $rewarddata = ['points' => $rewdPoints,'event_id'=> $request->event_id, 'user_id' => $request->user_id,'detail' => 'Credited Points', 'created_at' => date('Y-m-d H:i:s')];
             DB::table('rewards')->insert($rewarddata);
 
             return redirect()->route('order.index')
@@ -222,12 +222,12 @@ class OrderController extends Controller
         $body = array('receiver_id' => $order->user_id,'title' => 'Order Status' ,'message' => 'Order Delivered Successfully','content_available' => true);
 
         $sendNotification = $this->fcmNotificationService->sendFcmNotification($body);
-        $notifData = json_decode($sendNotification->getContent(), true);
-        if (isset($notifData['status']) && $notifData['status'] == true) {
-            $sendNotification->getContent();
-        } else {
-            $sendNotification->getContent();
-        }
+        // $notifData = json_decode($sendNotification->getContent(), true);
+        // if (isset($notifData['status']) && $notifData['status'] == true) {
+        //     $sendNotification->getContent();
+        // } else {
+        //     $sendNotification->getContent();
+        // }
         
         return response()->json(['success' => 'Order Delivered successfully']);
         return redirect()->route('order.index')
@@ -248,12 +248,12 @@ class OrderController extends Controller
         $body = array('receiver_id' => $book->user_id,'title' => 'Order Status' ,'message' => 'Order Declined Successfully','content_available' => true);
 
         $sendNotification = $this->fcmNotificationService->sendFcmNotification($body);
-        $notifData = json_decode($sendNotification->getContent(), true);
-        if (isset($notifData['status']) && $notifData['status'] == true) {
-            $sendNotification->getContent();
-        } else {
-            $sendNotification->getContent();
-        }
+        // $notifData = json_decode($sendNotification->getContent(), true);
+        // if (isset($notifData['status']) && $notifData['status'] == true) {
+        //     $sendNotification->getContent();
+        // } else {
+        //     $sendNotification->getContent();
+        // }
 
         return response()->json(['success' => 'Order declined Successfully!']);
         return redirect()->route('order.index')

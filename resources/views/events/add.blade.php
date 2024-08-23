@@ -15,8 +15,7 @@
             <br />
             <div class="form-group">
                 <label for="exampleInputEmail1">Event Description</label>
-                <textarea class="form-control character specialcharcterValid" rows="5" name="event_description"
-                    id="comment"></textarea>
+                <textarea class="form-control  " rows="5" name="event_description" id="comment"></textarea>
                 @error('event_description')
                 <span class="text-danger">{{ $message }}</span>
                 @enderror

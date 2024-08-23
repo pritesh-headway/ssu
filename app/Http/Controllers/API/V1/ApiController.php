@@ -47,7 +47,7 @@ class ApiController extends Controller
     protected $fcmNotificationService;
     public function __construct(CurlApiService $curlApiService, FcmNotificationService $fcmNotificationService)
     {
-        $this->per_page_show = 20;
+        $this->per_page_show = 50;
         $this->base_url = url('/');
         $this->profile_path = '/public/profile_images/';
         $this->banner_path = '/public/banner_images/';
@@ -69,7 +69,7 @@ class ApiController extends Controller
             'mobile' => 'required|min:10|digits:10',
             'otp' => 'required|min:4|digits:4',
             'user_type' => 'required',
-            'device_token' => 'required',
+            // 'device_token' => 'required',
             'device_type' => 'required',
             'country_code' => 'required|digits:2',
         ]);
@@ -83,17 +83,15 @@ class ApiController extends Controller
 
         $mobile = $request->mobile;
         $otp = $request->otp;
-        $device_token = $request->device_token;
+        $device_token = isset($request->device_token) ? $request->device_token : '';
         $device_type = $request->device_type;
         $base_url = $this->base_url;
         $user = User::where('phone_number', $mobile)->where('status', 1)->first();
-        if($user->phone_number != '9879879879') { // remove once live apk
-            if (!$user || $user->otp !== $otp || Carbon::now()->greaterThan($user->otp_expires_at)) {
-                $result['status'] = false;
-                $result['message'] = 'Invalid OTP or OTP expired';
-                $result['data'] = (object) [];
-                return response()->json($result, 200);
-            }
+        if (!$user || $user->otp !== $otp || Carbon::now()->greaterThan($user->otp_expires_at)) {
+            $result['status'] = false;
+            $result['message'] = 'Invalid OTP or OTP expired';
+            $result['data'] = (object) [];
+            return response()->json($result, 200);
         }
 
         // Create token or session
@@ -164,28 +162,38 @@ class ApiController extends Controller
         $mobile = $request->mobile;
         $base_url = $this->base_url;
         $otp = rand(1000, 9999); //'0096';  
-        $otpExpiresAt = Carbon::now()->addMinutes(15);
+        $otpExpiresAt = Carbon::now()->addMinutes(1);
         DB::enableQueryLog();
 
          // Send OTP via SMS
         $phoneNumber = $mobile;
         $chkUser = User::where('phone_number', $mobile)->where('status', 1)->first();
         if ($chkUser) {
-            $chkUser->otp = $otp;
-            $chkUser->otp_expires_at = $otpExpiresAt;
-            $chkUser->save();
+            if($mobile != '9879879879' && $mobile != '7874600096' && $mobile != '7567300096') { // remove once live apk
+                $chkUser->otp = $otp;
+                $chkUser->otp_expires_at = $otpExpiresAt;
+                $chkUser->save();
 
-            $message = 'Dear Customer,
-            Your SSU App Login OTP is '.$otp.'
-            Do not share this code with anyone.
-            www.headway.guru';
+                $message = 'Dear Customer,
+    Your SSU App Login OTP is '.$otp.'
+    Do not share this code with anyone.
+    www.headway.guru';
 
-            $data['SenderID'] = 'HBSSSU';
-            $data['SMSType'] = 4;
-            $data['Mobile'] = $phoneNumber;
-            $data['EntityID'] = env('API_ENTITY_ID');
-            $data['TemplateID'] = env('API_Template_ID');
-            $data['MsgText'] = $message;
+                $data['SenderID'] = 'HBSSSU';
+                $data['SMSType'] = 4;
+                $data['Mobile'] = $phoneNumber;
+                $data['EntityID'] = env('API_ENTITY_ID');
+                $data['TemplateID'] = env('API_Template_ID');
+                $data['MsgText'] = $message;
+
+            } else {
+                $data= [];
+                $chkUser->otp = '0096';
+                $chkUser->otp_expires_at = $otpExpiresAt;
+                $chkUser->save();
+            }
+
+            
 
             $response = $this->curlApiService->postRequest(env('API_KEY'), $data);
             if(strpos($response, "ok") !== false){
@@ -237,15 +245,25 @@ class ApiController extends Controller
 
         auth()->logout();
         $token = $request->header('token');
-        $user = User::where('id', $request->user_id)->where('status', 1)->first();
-        $user->status = 1;
-        $user->save();
+        $user = User::where('id', $request->user_id)->where('status', '1')->first();
+        if($user) {
+            $user->status = 1;
+            $user->save();
+        }
+
+        $userDevice = UserDevices::where('user_id', $request->user_id)->where('status', '1')->where('device_token', $token)->first();
+        if($userDevice) {
+            $userDevice->device_token = '';
+            $userDevice->status = '0';
+            $userDevice->updated_at = date("Y-m-d H:i:s");
+            $userDevice->save();
+        }
 
         DB::table('user_devices')
             ->join("users", "user_devices.user_id", "=", "users.id")
             ->where("user_devices.login_token", "=", $token)
             ->where("users.id", "=", $request->user_id)
-            ->update(["user_devices.status" => 0, "user_devices.updated_at" => date("Y-m-d H:i:s"), 'user_devices.device_token' => '']);
+            ->update(["user_devices.status" => '0', "user_devices.updated_at" => date("Y-m-d H:i:s"), 'user_devices.device_token' => '']);
 
         $result['status'] = true;
         $result['message'] = "Logout Successfully";
@@ -384,14 +402,14 @@ class ApiController extends Controller
         if ($userData['status'] == false) {
             return $checkToken->getContent();
         }
-
+        $offset = ($page_number - 1) * $this->per_page_show;
         if($search == "") {
             // DB::enableQueryLog();
             $sellers = User::select('users.id', 'users.user_id', 'users.user_type', 'users.name', 'users.lname', 'users.storename', 'users.email', 'users.phone_number', 'users.city', 'users.avatar', 'users.PAN', 'users.GST', 'users.flatNo', 'users.pincode', 'users.area', 'users.state', 'users.is_first_time')
             ->where('users.user_type', '2')->where('users.status', 1)->where('users.id', '!=', 1)->where('users.id', '!=', $user_id)->groupBy('users.id')->paginate($this->per_page_show, ['*'], 'page', $page_number);
             // $query = DB::getQueryLog();
             // dd($query);
-            $offset = ($page_number - 1) * $this->per_page_show;
+           
             $seller = DB::select("SELECT users.id,users.user_id,users.user_type, users.name, users.lname,users.storename ,users.email,users.phone_number,users.area,users.state,users.is_first_time,users.date_of_birth,users.otp,users.PAN,users.GST,users.flatNo,users.pincode,users.city,users.avatar ,chat_list.id as chat_id
                 FROM `users` 
                 LEFT JOIN `chat_list` on (users.id = `chat_list`.`sender_id` OR users.id = `chat_list`.`receiver_id`) AND (`chat_list`.`receiver_id` = $user_id OR `chat_list`.`sender_id` = $user_id)
@@ -399,8 +417,14 @@ class ApiController extends Controller
                 GROUP BY users.id LIMIT $this->per_page_show OFFSET $offset");
 
         } else {
-            $seller = $sellers = User::select('users.id', 'users.user_id', 'users.user_type', 'users.name', 'users.lname', 'users.storename', 'users.email', 'users.phone_number', 'users.city', 'users.avatar', 'users.PAN', 'users.GST', 'users.flatNo', 'users.pincode', 'users.area', 'users.state', 'users.is_first_time',DB::raw("0 as chat_id"))
+           $sellers = User::select('users.id', 'users.user_id', 'users.user_type', 'users.name', 'users.lname', 'users.storename', 'users.email', 'users.phone_number', 'users.city', 'users.avatar', 'users.PAN', 'users.GST', 'users.flatNo', 'users.pincode', 'users.area', 'users.state', 'users.is_first_time',DB::raw("0 as chat_id"))
             ->where('users.user_type', '2')->where('users.storename', 'like', '%' . $search . '%')->orWhere('users.city','like', '%' . $search . '%')->where('users.status', 1)->where('users.id', '!=', 1)->where('users.id', '!=', $user_id)->groupBy('users.id')->paginate($this->per_page_show, ['*'], 'page', $page_number);
+            
+            $seller = DB::select("SELECT users.id,users.user_id,users.user_type, users.name, users.lname,users.storename ,users.email,users.phone_number,users.area,users.state,users.is_first_time,users.date_of_birth,users.otp,users.PAN,users.GST,users.flatNo,users.pincode,users.city,users.avatar ,chat_list.id as chat_id
+                FROM `users` 
+                LEFT JOIN `chat_list` on (users.id = `chat_list`.`sender_id` OR users.id = `chat_list`.`receiver_id`) AND (`chat_list`.`receiver_id` = $user_id OR `chat_list`.`sender_id` = $user_id)
+                WHERE `users`.`user_type` = '2' AND (`users`.`city` LIKE '%$search%' OR `users`.`storename` LIKE '%$search%' ) and `users`.`status` = '1' and `users`.`id` != '1'  and `users`.`id` != $user_id 
+                GROUP BY users.id LIMIT $this->per_page_show OFFSET $offset");
         }
         $userData = [];
         foreach ($seller as $key => $users) {
@@ -1127,11 +1151,17 @@ class ApiController extends Controller
             return $checkToken->getContent();
         }
         $event_id = $request->event_id;
-        $events = Event::leftJoin('event_details', 'events.id', '=', 'event_details.event_id')
-            ->select('events.*', DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->event_video_path . "', event_details.video),'') AS video"), 'event_details.title')
+        $events = Event::leftJoin('event_details', function($join)  use ($event_id) {
+                $join->on('events.id', '=', 'event_details.event_id')
+                    ->where('event_details.status', '=', '1')
+                    ->where('event_details.event_id', '=', $event_id);
+            })
+            ->select('events.*','event_details.id AS dID','event_details.video', 'event_details.title')
             ->where('events.id', '=', $event_id)
-            ->where('event_details.status', '=', '1')
-             ->where('event_details.type', '=', 2)
+            ->where('event_details.event_id', '=', $event_id)
+            ->where('event_details.status', '1')
+            ->where('event_details.type', '=', 2)
+            ->orWhere('event_details.type', '=', 3)
             ->paginate($this->per_page_show, ['*'], 'page', $page_number);
 
         $datas = [];
@@ -1143,7 +1173,7 @@ class ApiController extends Controller
             'total_pages' => $events->lastPage(),
         ];
         foreach ($events as $key => $value) {
-            $evnt['id'] = $value['id'];
+            $evnt['id'] = $value['dID'];
             $evnt['event_name'] = $value['event_name'];
             $evnt['event_title'] = $value['title'];
             $evnt['event_year'] = date('Y', strtotime($value['start_date']));
@@ -1151,7 +1181,11 @@ class ApiController extends Controller
             $evnt['end_date'] = date('d/m/Y', strtotime($value['end_date']));
             $evnt['prize'] = $value['prize'];
             $evnt['event_location'] = $value['event_location'];
-            $evnt['videos'] = ($value['video']) ? $value['video'] : '';
+            if(preg_match('/https:\/\/(www\.)*youtube\.com\/.*/',$value['video'])){
+                $evnt['videos'] = ($value['video']) ? $value['video'] : '';
+            } else {
+                $evnt['videos'] = ($value['video']) ? $base_url.$this->event_video_path. $value['video'] : '';
+            }
             $datas[] = $evnt;
         }
 
@@ -1699,19 +1733,22 @@ class ApiController extends Controller
         $chat->save();
         $last_insert_id = $chat->id;
 
-        $chatData = Chatmessage::select('chatmessages.id', 'chatmessages.user_id', 'chatmessages.receiver_id', 'chatmessages.sender_id', 'chatmessages.message AS message', DB::raw("DATE_FORMAT(chatmessages.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("UNIX_TIMESTAMP(chatmessages.created_at)*1000 AS time"),'chatmessages.chat_id')->where('id', $last_insert_id)->first();
+        $chatData = Chatmessage::select('chatmessages.id', 'chatmessages.user_id', 'chatmessages.receiver_id', 'chatmessages.sender_id', 'chatmessages.message AS message', DB::raw("DATE_FORMAT(chatmessages.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("UNIX_TIMESTAMP(chatmessages.created_at) AS time"),'chatmessages.chat_id','users2.storename AS receiver_storename','users.storename AS sender_storename')
+        ->leftJoin('users AS users2', 'users2.id', '=', 'chatmessages.receiver_id')
+        ->leftJoin('users AS users', 'users.id', '=', 'chatmessages.sender_id')
+        ->where('chatmessages.id', $last_insert_id)->first();
         // dd($chatData);
         $newData  = json_encode($chatData);
         $body = array('user_id' => $user_id,'sender_id' => $request->sender_id, 'receiver_id' => $request->receiver_id,'title' => $request->storename ,'message' => $request->message, 'data' => $newData, 'content_available' => true);
 
         $sendNotification = $this->fcmNotificationService->sendFcmNotification($body);
-        $notifData = json_decode($sendNotification->getContent(), true);
+        // $notifData = json_decode($sendNotification->getContent(), true);
 
-        if (isset($notifData['status']) && $notifData['status'] == true) {
-             $sendNotification->getContent();
-        } else {
-             $sendNotification->getContent();
-        }
+        // if (isset($notifData['status']) && $notifData['status'] == true) {
+        //     return $sendNotification->getContent();
+        // } else {
+        //     return $sendNotification->getContent();
+        // }
         return response()->json(['status' => true, 'message' => 'Message send successfully', 'data' => ['message' => $chatData]], 200);
     }
 
@@ -1758,7 +1795,7 @@ class ApiController extends Controller
         // ORDER BY chatmessages.created_at DESC");
         // dd($chatList);
 
-        $chatList = Chatmessage::select('chatmessages.id', 'chatmessages.user_id', 'chatmessages.receiver_id', 'chatmessages.sender_id', 'chatmessages.message AS lastMessage','users2.storename AS receiver_storename', DB::raw("DATE_FORMAT(chatmessages.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->profile_path . "', users2.avatar),'') AS receiver_avatar"), DB::raw("UNIX_TIMESTAMP(chatmessages.created_at)*1000 AS time"),'chatmessages.chat_id','users.storename AS sender_storename', DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->profile_path . "', users.avatar),'') AS sender_avatar"))
+        $chatList = Chatmessage::select('chatmessages.id', 'chatmessages.user_id', 'chatmessages.receiver_id', 'chatmessages.sender_id', 'chatmessages.message AS lastMessage','users2.storename AS receiver_storename', DB::raw("DATE_FORMAT(chatmessages.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->profile_path . "', users2.avatar),'') AS receiver_avatar"), DB::raw("UNIX_TIMESTAMP(chatmessages.created_at) AS time"),'chatmessages.chat_id','users.storename AS sender_storename', DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->profile_path . "', users.avatar),'') AS sender_avatar"),'chatmessages.is_admin',DB::raw("CASE WHEN chatmessages.is_admin = 1 THEN 'SSU' ELSE '' END AS sender_admin"))
         ->where(function($query) use ($user_id) {
             $query->where('chatmessages.user_id', $user_id)
                 ->orWhere('chatmessages.receiver_id', $user_id);
@@ -1827,9 +1864,10 @@ class ApiController extends Controller
             return response()->json($result, 200);
         }
 
-        $chatList = Chatmessage::select('chatmessages.id','chatmessages.message','chatmessages.user_id','chatmessages.receiver_id', DB::raw("DATE_FORMAT(chatmessages.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("UNIX_TIMESTAMP(chatmessages.created_at)*1000 AS time"),'users.storename','chatmessages.chat_id')
+        $chatList = Chatmessage::select('chatmessages.id','chatmessages.message','chatmessages.user_id','chatmessages.receiver_id', DB::raw("DATE_FORMAT(chatmessages.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("UNIX_TIMESTAMP(chatmessages.created_at) AS time"),'users.storename','chatmessages.chat_id')
         ->leftJoin('users','users.id','=','chatmessages.user_id')
-        ->orWhere('chatmessages.chat_id',$chat_id)
+        ->where('chatmessages.chat_id',$chat_id)
+        ->groupBy('chatmessages.message')
         ->orderBy('chatmessages.id','DESC')
         ->paginate($this->per_page_show, ['*'], 'page', $page_number);
         // dd($chatList);
@@ -1871,18 +1909,20 @@ class ApiController extends Controller
         $validator = Validator::make($request->all(), [
             'fcmtoken' => 'required',
             'user_id' => 'required',
+            'receiver_id' => 'required',
             'title' => 'required',
             'message' => 'required',
         ]);
         $body = $request;
-        $checkToken = $this->sendFcmNotification($body);
+         $newData  = json_encode(array());
+        $body = array('user_id' => $request->user_id,'sender_id' => $request->user_id, 'receiver_id' => $request->receiver_id,'title' => $request->title ,'message' => $request->message, 'data' => $newData, 'content_available' => true);
+       $sendNotification = $this->fcmNotificationService->sendFcmNotification($body);
+       $notifData = json_decode($sendNotification->getContent(), true);
 
-        $userData = json_decode($checkToken->getContent(), true);
-        // dd($userData);
-        if ($userData['status'] == true) {
-            return $checkToken->getContent();
+        if (isset($notifData['status']) && $notifData['status'] == true) {
+            return $sendNotification->getContent();
         } else {
-            return $checkToken->getContent();
+            return $sendNotification->getContent();
         }
     }
 
@@ -1918,7 +1958,7 @@ class ApiController extends Controller
         }
 
         $billsList = Asset::where('status', '=', 1)
-        ->select('id', 'user_id', 'event_id', 'title', 'detail', DB::raw("CASE WHEN order_status = '0' THEN 'Pending' WHEN order_status = '1' THEN 'Approved' ELSE '' END order_status"), DB::raw("DATE_FORMAT(created_at, '%d %M %Y %h:%i %p') AS date"),"quantity")
+        ->select('id', 'user_id', 'event_id', 'title', 'detail', DB::raw("CASE WHEN order_status = '0' THEN 'Pending' WHEN order_status = '1' THEN 'Approved' WHEN order_status = '2' THEN 'Declined' ELSE '' END order_status"), DB::raw("DATE_FORMAT(created_at, '%d %M %Y %h:%i %p') AS date"),"quantity",'reasons')
             ->where('user_id', '=', $user_id)
             ->where('event_id', '=', $event_id)
             ->paginate($this->per_page_show, ['*'], 'page', $page_number);

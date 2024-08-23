@@ -4,7 +4,7 @@
     <a style="float: right;" href="{{ route('seller.create')}}" class="btn btn-primary">Add Seller</a>
     <form action="{{ url('import-users') }}" method="POST" enctype="multipart/form-data">
         @csrf
-        <input type="file" name="file"
+        <input type="file" required name="file"
             accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
         <button type="submit" class="btn btn-primary" style="font-size: 14px;">Import Data</button>
     </form>
@@ -21,6 +21,7 @@
                 <tr>
                     <th>No</th>
                     <th>Seller Name</th>
+                    <th>City</th>
                     <th>Store Name</th>
                     <th>Seller Profile</th>
                     <th width="105px">Action</th>
@@ -57,6 +58,10 @@
                 {
                     data: 'name',
                     name: 'name',
+                },
+                {
+                    data: 'city',
+                    name: 'city',
                 },
                 {
                     data: 'storename',

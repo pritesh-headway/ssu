@@ -24,7 +24,7 @@
             </div>
             <ul class="perfect-scrollbar relative h-[calc(100vh-80px)] space-y-0.5 overflow-y-auto overflow-x-hidden p-4 py-0 font-semibold"
                 x-data="{ activeDropdown: 'dashboard' }">
-                {{-- <li class="menu nav-item">
+                <li class="menu nav-item">
                     <a href="{{ URL('home') }}" class="group {{ request()->is('home*') ? 'active' : '' }}">
                         <button type="button" class="nav-link group"
                             :class="{'active' : activeDropdown === 'dashboard'}"
@@ -49,7 +49,7 @@
                             </div>
                         </button>
                     </a>
-                </li> --}}
+                </li>
                 <li class="nav-item">
                     <ul>
                         <li class="nav-item">
@@ -312,6 +312,11 @@
                                 <li>
                                     <a class="group {{ request()->is('cms*') ? 'active' : '' }}"
                                         href="{{ route('cms.index') }}">CMS</a>
+                                </li>
+
+                                <li>
+                                    <a class="group {{ request()->is('broadcast*') ? 'active' : '' }}"
+                                        href="{{ route('broadcast.index') }}">Broadcast Message</a>
                                 </li>
                             </ul>
                         </li>

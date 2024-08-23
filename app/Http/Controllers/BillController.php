@@ -74,7 +74,8 @@ class BillController extends Controller
         ]);
          
         $bill_Arr = Bill::where('id', $request->bid)->first();
-         if ($image = $request->file('receipt')) {
+
+        if ($image = $request->file('receipt')) {
             $destinationPath = 'public/bills/';
             $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
             $image->move($destinationPath, $profileImage);
@@ -83,6 +84,9 @@ class BillController extends Controller
 
         $bill_Arr->bill_status = '1';
         $bill_Arr->save();
+      
+        $rewarddata = ['points' => (int)$request->amount,'event_id'=> $request->event_id, 'user_id' => $request->user_id,'detail' => 'Deduct for '.$bill_Arr->title, 'transaction_type' => '2', 'created_at' => date('Y-m-d H:i:s')];
+        DB::table('rewards')->insert($rewarddata);
 
         return redirect()->route('bill.index')
             ->with('success', 'Bill Approved successfully.');

@@ -16,9 +16,9 @@
                     <th>BIll Title</th>
                     <th>Amount</th>
                     <th>Details</th>
-                    <th>Bill Date</th>
+                    <th>Date</th>
                     <th>Payment Verification</th>
-                    <th>Order Status</th>
+                    <th>Status</th>
                     <th>Reasons</th>
                     <th width="105px">Actions</th>
                 </tr>
@@ -85,18 +85,21 @@
                 },
                 {
                     data: 'bill_date',
-                    name: 'bill_date'
+                    name: 'bill_date',
+                    sWidth:'15%'
                 },
                 {
                     data: 'file',
                     name: 'file',
+                    searchable: false,
                     "render": function(data, type, full, meta) {
-                        return "<a target='_blank' href=\"bills/" + data + "\"><img src=\"bills/" + data + "\" height=\"50\" width=\"100\"/><a/>";
+                        return "<a target='_blank' href=\"bills/" + data + "\"><img src=\"bills/" + data + "\" height=\"50\" width=\"50\"/><a/>";
                     },
                 },
                 {
                     data: 'bill_status',
                     name: 'bill_status',
+                    searchable: false,
                     "render": function(data, type, full, meta) {
                         if(data == 'Approved') {
                             return "<span style=\"color:green\" height=\"50\" width=\"100\"/><b>"+data+"</b></span>";
@@ -131,7 +134,7 @@
     $(".subBtn").click(function() {
         var reason = $("#reason").val();
         if(reason) {
-            if (confirm('Are you sure you want to delete this item?')) {
+            if (confirm('Are you sure you want to decline this item?')) {
                 $.ajax({
                     url: 'bill/' + window.id,
                     type: 'DELETE',
@@ -142,7 +145,8 @@
                     success: function(response) {
                         $("#exampleModal").modal('hide');
                         $('#myTable').DataTable().ajax.reload();
-                        alert(response.success);
+                        $("#reason").val('');
+                        // alert(response.success);
                     }
                 });
             }

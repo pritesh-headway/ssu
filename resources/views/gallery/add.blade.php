@@ -26,6 +26,7 @@
                     <option value="">Select Gallery Type</option>
                     <option value="1"> Image</option>
                     <option value="2"> Video</option>
+                    <option value="3"> Youtube Link</option>
                 </select>
                 @error('type')
                 <span class="text-danger">{{ $message }}</span>
@@ -34,7 +35,8 @@
             <br />
             <div class="form-group">
                 <label for="exampleInputEmail1">Title</label>
-                <input type="text" class="form-control character" id="title" name="title" aria-describedby="emailHelp">
+                <input type="text" class="form-control specialcharcterValid" id="title" name="title"
+                    aria-describedby="emailHelp">
                 @error('title')
                 <span class="text-danger">{{ $message }}</span>
                 @enderror
@@ -54,6 +56,14 @@
                 @enderror
             </div>
             <br />
+            <div class="form-group link hide">
+                <label for="exampleInputEmail1">Youtube Link</label>
+                <input type="text" class="form-control " id="link" name="link" aria-describedby="emailHelp">
+                @error('link')
+                <span class="text-danger">{{ $message }}</span>
+                @enderror
+            </div>
+            <br />
             <button type="submit" class="btn btn-primary">Submit</button>
             <button type="button" onclick="history.back()" class="btn btn-secondary ">Back</button>
         </form>
@@ -67,11 +77,20 @@
             if(status == 1) {
                 $(".image").removeClass('hide');
                 $(".video").addClass('hide');
+                $(".link").addClass('hide');
             }
             //video
             if(status == 2) {
                 $(".video").removeClass('hide');
                 $(".image").addClass('hide');
+                $(".link").addClass('hide');
+            }
+
+            //link
+            if(status == 3) {
+                $(".link").removeClass('hide');
+                $(".image").addClass('hide');
+                $(".video").addClass('hide');
             }
         });
     });

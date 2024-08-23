@@ -18,7 +18,7 @@ class GalleryController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Gallery::select('*',DB::raw("CASE WHEN type = 1 THEN 'Image' WHEN type = 2 THEN 'Video' ELSE '' END type"))->where('status', 1)->get();
+            $data = Gallery::select('*',DB::raw("CASE WHEN type = 1 THEN 'Image' WHEN type = 2 THEN 'Video' WHEN type = 3 THEN 'Youtube Link' ELSE '' END type"))->where('status', 1)->get();
             return Datatables::of($data)
                 ->editColumn('start_date', function($data){ 
                     if($data->start_date) {
@@ -58,8 +58,9 @@ class GalleryController extends Controller
             'event_id' => 'required|not_in:null',
             'type' =>'required|not_in:null',
             'title' => 'required',
-            'image' => ($request->type == 1) ? 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5042' : '',
+            'image' => ($request->type == 1) ? 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10240' : '',
             'video' => ($request->type == 2) ? 'required|mimes:mp4,ogx,oga,ogv,ogg,webm|max:515024' : '',
+            'link' => ($request->type == 3) ? 'required' : '',
         ], [
             'event_id' => 'The event name is required',
             'user_id' => 'The gallery type is required',
@@ -73,7 +74,7 @@ class GalleryController extends Controller
 
                 $input['image'] = "$profileImage";
             }
-        } else {
+        } else if($request->type == 2) {
             if ($image = $request->file('video')) {
                 $destinationPath = 'public/event_videos/';
                 $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
@@ -81,6 +82,8 @@ class GalleryController extends Controller
 
                 $input['video'] = "$profileImage";
             }
+        } else {
+            $input['video'] = "$request->link";
         }
 
         Gallery::create($input);
@@ -115,8 +118,9 @@ class GalleryController extends Controller
             'event_id' => 'required|not_in:null',
             'type' =>'required|not_in:null',
             'title' => 'required',
-            'image' => ($request->type == 1) ? 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5042' : '',
-            'video' => ($request->type == 2) ? 'required|mimes:mp4,ogx,oga,ogv,ogg,webm|max:515024' : '',
+            // 'image' => ($request->type == 1) ? 'required|image|mimes:jpeg,png,jpg,gif,svg|max:55042' : '',
+            // 'video' => ($request->type == 2) ? 'required|mimes:mp4,ogx,oga,ogv,ogg,webm|max:515024' : '',
+            'link' => ($request->type == 3) ? 'required' : '',
         ], [
             'event_id' => 'The event name is required',
             'user_id' => 'The gallery type is required',
@@ -133,7 +137,7 @@ class GalleryController extends Controller
             } else {
                 unset($input['image']);
             }
-        } else {
+        } else if ($request->type == 2) {
             if ($image = $request->file('docFile')) {
                 $destinationPath = 'public/event_videos/';
                 $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
@@ -143,6 +147,8 @@ class GalleryController extends Controller
             }else {
                 unset($input['video']);
             }
+        } else {
+             $input['video'] = "$request->link";
         }
         $gallery->update($input);
         return redirect()->route('gallery.index')

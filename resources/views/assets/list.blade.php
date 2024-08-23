@@ -18,6 +18,7 @@
                     <th>Quantity</th>
                     <th>Deduct Points</th>
                     <th>Asset Date</th>
+                    <th>Reason</th>
                     <th width="105px">Action</th>
                 </tr>
             </thead>
@@ -41,6 +42,28 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary subBtn">Submit</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                    data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel2
+    aria-hidden=" true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel2">Asset Declined</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <textarea class="form-control" name="reason" id="reason"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary subBtns">Submit</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal"
                     data-bs-dismiss="modal">Cancel</button>
             </div>
@@ -89,6 +112,11 @@
                 {
                     data: 'bill_date',
                     name: 'bill_date'
+                }
+                ,
+                {
+                    data: 'reasons',
+                    name: 'reasons'
                 },
                 {
                     data: 'action',
@@ -104,6 +132,34 @@
        $("#exampleModal").modal('show');
        window.id = id;
     }
+    function deleteItem(id) {
+        $("#exampleModal2").modal('show');
+        window.did = id;
+    }
+    $(".subBtns").click(function() {
+        var reason = $("#reason").val();
+        if(reason) {
+            if (confirm('Are you sure you want to decline this item?')) {
+                $.ajax({
+                    url: 'asset/' + window.did,
+                    type: 'DELETE',
+                    async:false,
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        reasons: reason
+                    },
+                    success: function(response) {
+                        $("#exampleModal2").modal('hide');
+                        $('#myTable').DataTable().ajax.reload();
+                        $("#reason").val('');
+                        // alert(response.success);
+                    }
+                });
+            }
+        } else {
+            $("#reason").css('border-color','red');
+        }
+    })
 
     $(".subBtn").click(function() {
         var amount = $("#amount").val();

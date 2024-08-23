@@ -28,6 +28,7 @@
                     <option value="">Select Gallery Type</option>
                     <option value="1" {{ $gallery->type == 1 ? 'selected' : '' }}> Image</option>
                     <option value="2" {{ $gallery->type == 2 ? 'selected' : '' }}> Video</option>
+                    <option value="3" {{ $gallery->type == 3 ? 'selected' : '' }}> Youtube Link</option>
                 </select>
                 @error('type')
                 <span class="text-danger">{{ $message }}</span>
@@ -36,8 +37,8 @@
             <br />
             <div class="form-group">
                 <label for="exampleInputEmail1">Title</label>
-                <input type="text" class="form-control character" id="title" value="{{ $gallery->title }}" name="title"
-                    aria-describedby="emailHelp">
+                <input type="text" class="form-control specialcharcterValid" id="title" value="{{ $gallery->title }}"
+                    name="title" aria-describedby="emailHelp">
                 @error('title')
                 <span class="text-danger">{{ $message }}</span>
                 @enderror
@@ -45,7 +46,7 @@
             <br />
 
             <?php if($gallery->type == 1) { ?>
-            <div class="form-group">
+            <div class="form-group image ">
                 <input type="file" name="image" class="form-control-file border"><br />
                 <img width="100" height="80" src="{{URL('public/event_images') }}/{{ $gallery->image }}" width="300px">
                 @error('image')
@@ -54,7 +55,7 @@
             </div>
             <?php } ?>
             <?php if($gallery->type == 2) { ?>
-            <div class="form-group">
+            <div class="form-group video ">
                 <input type="file" name="video" class="form-control-file border"><br />
 
                 <video width="320" height="240" controls>
@@ -68,6 +69,15 @@
             </div>
             <?php } ?>
             <br />
+            <?php if($gallery->type == 3) { ?>
+            <div class="form-group link ">
+                <label for="exampleInputEmail1">Youtube Link</label>
+                <input type="text" name="link" value="{{ $gallery->video }}" class="form-control "><br />
+                @error('link')
+                <span class="text-danger">{{ $message }}</span>
+                @enderror
+            </div>
+            <?php } ?>
             <button type="submit" class="btn btn-primary">Update</button>
             <button type="button" onclick="history.back()" class="btn btn-secondary ">Back</button>
         </form>
@@ -81,11 +91,20 @@
             if(status == 1) {
                 $(".image").removeClass('hide');
                 $(".video").addClass('hide');
+                $(".link").addClass('hide');
             }
             //video
             if(status == 2) {
                 $(".video").removeClass('hide');
                 $(".image").addClass('hide');
+                $(".link").addClass('hide');
+            }
+
+            //link
+            if(status == 3) {
+                $(".link").removeClass('hide');
+                $(".image").addClass('hide');
+                $(".video").addClass('hide');
             }
         });
     });
