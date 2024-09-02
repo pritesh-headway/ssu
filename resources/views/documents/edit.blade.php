@@ -28,6 +28,7 @@
                     <option value="">Select Seller Name</option>
                     <?php if ($userList) { 
                         foreach ($userList as $key => $value) { ?>
+                    <option value="0" {{ 0==$value->id ? 'selected' : '' }}>All</option>
                     <option value="{{ $value->id }}" {{ $document->user_id == $value->id ? 'selected' : '' }}>{{
                         $value->name }} {{ $value->lname }}</option>
                     <?php } } ?>

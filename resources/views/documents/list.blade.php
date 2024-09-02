@@ -53,7 +53,16 @@
                 },
                 {
                     data: 'seller_name',
-                    name: 'seller_name'
+                    name: 'seller_name',
+                    "render": function(data, type, full, meta) {
+                        console.log(data);
+                        
+                        if(data == null) {
+                            return " All ";
+                        } else {
+                            return data;
+                        }
+                    },
                 },
                 {
                     data: 'file',

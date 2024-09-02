@@ -32,7 +32,11 @@ class HomeController extends Controller
     {
         $eventList = Event::all()->where('status', 1);
         $orderList = DB::table('coupons_order')
-            ->leftJoin('users', 'users.id', '=', 'coupons_order.user_id')
+            // ->leftJoin('users', 'users.id', '=', 'coupons_order.user_id')
+            ->leftJoin('users', function($join) {
+                $join->on('coupons_order.user_id', '=', 'users.id')
+                    ->where('users.status', '=', '1');
+            })
             ->leftJoin('events', 'events.id', '=', 'coupons_order.event_id')
             ->select('coupons_order.id','coupons_order.user_id','coupons_order.event_id','coupons_order.quantity','coupons_order.receipt_payment','users.storename',DB::raw("CONCAT(users.name, ' ',users.lname) AS seller_name"),DB::raw("CASE WHEN coupons_order.order_status = '0' THEN 'Pending' WHEN coupons_order.order_status = '1' THEN 'Approved' WHEN coupons_order.order_status = '2' THEN 'Declined' WHEN coupons_order.order_status = '3' THEN 'Delivered' ELSE 'Pending' END AS order_status"),'events.event_name', 'events.event_location',DB::raw("DATE_FORMAT(coupons_order.created_at, '%d-%m-%Y') AS order_date"),DB::raw("YEAR(events.start_date) AS event_year"),'coupons_order.reasons','coupons_order.created_at','users.avatar')
             ->orderBy('coupons_order.id', 'desc')

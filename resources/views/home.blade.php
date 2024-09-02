@@ -268,6 +268,7 @@
                                 <tr>
                                     <th class="ltr:rounded-l-md rtl:rounded-r-md">Order ID</th>
                                     <th>Seller</th>
+                                    <th>Store Name</th>
                                     <th>No. of Coupons</th>
                                     <th class="ltr:rounded-r-md rtl:rounded-l-md">Status</th>
                                 </tr>
@@ -286,6 +287,7 @@
                                             <span class="whitespace-nowrap">{{ $value->seller_name }}</span>
                                         </div>
                                     </td>
+                                    <td class="text-primary">{{ $value->storename }}</td>
                                     <td class="text-primary">{{ $value->quantity }}</td>
                                     <td>
                                         <?php if($value->order_status == 'Approved') { ?>

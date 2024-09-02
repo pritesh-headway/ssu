@@ -24,6 +24,7 @@
                 <label for="exampleInputEmail1">Seller Name</label>
                 <select class="form-control" name="user_id" id="user_id">
                     <option value="">Select Seller Name</option>
+                    <option value="0">All</option>
                     <?php if ($userList) { 
                         foreach ($userList as $key => $value) { ?>
                     <option value="{{ $value->id }}">{{ $value->name }} {{ $value->lname }}</option>
