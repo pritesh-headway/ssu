@@ -51,7 +51,8 @@
                 },
                 {
                     data: 'event_name',
-                    name: 'event_name'
+                    name: 'event_name',
+                    searchable: false
                 },
                 {
                     data: 'prize_name',
@@ -89,7 +90,7 @@
     function deleteItem(id) {
         if (confirm('Are you sure you want to delete this item?')) {
             $.ajax({
-                url: 'banner/' + id,
+                url: 'prize/' + id,
                 type: 'DELETE',
                 data: {
                     _token: '{{ csrf_token() }}'

@@ -1,19 +1,25 @@
 @extends('layouts.app')
 @section('content')
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+{!! Toastr::message() !!}
 <div class="main-container min-h-screen text-black dark:text-white-dark">
     <!-- start main content section -->
     <div x-data="auth">
         <div class="absolute inset-0">
-            <img src="assets/images/auth/bg-gradient.png" alt="image" class="h-full w-full object-cover">
+            <img src="assets/images/auth/bg-gradient.png" alt="image"
+                class="h-full w-full object-cover team-single-imgs">
         </div>
         <div
             class="relative flex min-h-screen items-center justify-center bg-[url(../images/auth/map.png)] bg-cover bg-center bg-no-repeat px-6 py-10 dark:bg-[#060818] sm:px-16">
             <img src="assets/images/auth/coming-soon-object1.png" alt="image"
-                class="absolute left-0 top-1/2 h-full max-h-[893px] -translate-y-1/2">
+                class="absolute left-0 top-1/2 h-full max-h-[893px] -translate-y-1/2 team-single-imgs">
             <img src="assets/images/auth/coming-soon-object2.png" alt="image"
-                class="absolute left-24 top-0 h-40 md:left-[30%]">
-            <img src="assets/images/auth/coming-soon-object3.png" alt="image" class="absolute right-0 top-0 h-[300px]">
-            <img src="assets/images/auth/polygon-object.svg" alt="image" class="absolute bottom-0 end-[28%]">
+                class="absolute left-24 top-0 h-40 md:left-[30%] team-single-imgs">
+            <img src="assets/images/auth/coming-soon-object3.png" alt="image"
+                class="absolute right-0 top-0 h-[300px] team-single-imgs">
+            <img src="assets/images/auth/polygon-object.svg" alt="image"
+                class="absolute bottom-0 end-[28%] team-single-imgs">
             <div
                 class="relative flex w-full max-w-[1502px] flex-col justify-between overflow-hidden rounded-md bg-white/60 backdrop-blur-lg dark:bg-black/50 lg:min-h-[758px] lg:flex-row lg:gap-10 xl:gap-0">
                 <div
@@ -24,7 +30,7 @@
                     <div class="ltr:xl:-skew-x-[14deg] rtl:xl:skew-x-[14deg]">
 
                         <div class="mt-24 hidden w-full max-w-[430px] lg:block">
-                            <img src="assets/images/auth/login.svg" alt="Cover Image" class="w-full">
+                            <img src="assets/images/auth/login.svg" alt="Cover Image" class="w-full team-single-imgs">
                         </div>
                     </div>
                 </div>
@@ -33,7 +39,7 @@
                     <div
                         class="flex w-full max-w-[440px] items-center gap-2 lg:absolute lg:end-6 lg:top-6 lg:max-w-full">
                         <a href="index.html" class="block w-8 lg:hidden">
-                            <img src="assets/images/logo.png" alt="Logo" class="w-full">
+                            <img src="assets/images/logo.png" alt="Logo" class="w-full team-single-imgs">
                         </a>
                         <div class="dropdown ms-auto w-max" x-data="dropdown" @click.outside="open = false">
 
@@ -66,7 +72,7 @@
                             <div>
                                 <label for="Email">Email</label>
                                 <div class="relative text-white-dark">
-                                    <input id="Email" type="email" name="email" placeholder="Enter Email"
+                                    <input id="Email" required type="email" name="email" placeholder="Enter Email"
                                         class="form-input ps-10 placeholder:text-white-dark">
                                     <span class="absolute start-4 top-1/2 -translate-y-1/2">
                                         <svg width="18" height="18" viewbox="0 0 18 18" fill="none">
@@ -83,7 +89,8 @@
                             <div>
                                 <label for="Password">Password</label>
                                 <div class="relative text-white-dark">
-                                    <input id="Password" type="password" name="password" placeholder="Enter Password"
+                                    <input id="Password" required type="password" name="password"
+                                        placeholder="Enter Password"
                                         class="form-input ps-10 placeholder:text-white-dark">
                                     <span class="absolute start-4 top-1/2 -translate-y-1/2">
                                         <svg width="18" height="18" viewbox="0 0 18 18" fill="none">
@@ -118,17 +125,17 @@
                                 class="absolute inset-x-0 top-1/2 h-px w-full -translate-y-1/2 bg-white-light dark:bg-white-dark"></span>
                         </div>
 
-                        <div class="text-center dark:text-white">
+                        {{-- <div class="text-center dark:text-white">
                             Don't have an account ?
                             <a href="{{ route('register') }}"
                                 class="uppercase text-primary underline transition hover:text-black dark:hover:text-white">SIGN
                                 UP</a>
-                        </div>
+                        </div> --}}
                     </div>
                     <p class="absolute bottom-6 w-full text-center dark:text-white">
                         © <span id="footer-year">
                             <?php echo date('Y') ?>
-                        </span>
+                        </span>. SSU All Rights Reserved.
                     </p>
                 </div>
             </div>
@@ -136,6 +143,7 @@
     </div>
     <!-- end main content section -->
 </div>
+
 @endsection
 <script>
     @if(session('success'))
@@ -154,6 +162,7 @@
         toastr.warning("{{ session('warning') }}");
     @endif
 </script>
+
 <script>
     toastr.options = {
        "closeButton": true,

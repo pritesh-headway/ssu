@@ -26,9 +26,9 @@
                 <label for="exampleInputEmail1">Seller Name</label>
                 <select class="form-control" name="user_id" id="user_id">
                     <option value="">Select Seller Name</option>
+                    <option value="0" {{ 0==$document->user_id ? 'selected' : '' }}>All</option>
                     <?php if ($userList) { 
                         foreach ($userList as $key => $value) { ?>
-                    <option value="0" {{ 0==$value->id ? 'selected' : '' }}>All</option>
                     <option value="{{ $value->id }}" {{ $document->user_id == $value->id ? 'selected' : '' }}>{{
                         $value->name }} {{ $value->lname }}</option>
                     <?php } } ?>

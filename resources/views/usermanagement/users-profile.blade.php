@@ -48,7 +48,7 @@
                                         stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
                                         stroke-linejoin="round"></path>
                                 </svg> --}}
-                                Admin User
+                                {{ Auth::user()->name }}
                             </li>
                             <li class="flex items-center gap-2">
                                 <svg width="24" height="24" viewbox="0 0 24 24" fill="none"
@@ -73,7 +73,7 @@
                                         stroke="currentColor" stroke-width="1.5"></path>
                                     <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="1.5"></circle>
                                 </svg>
-                                SSU Admin
+                                SSU {{ Auth::user()->name }}
                             </li>
                             <li>
                                 <a href="javascript:;" class="flex items-center gap-2">
@@ -86,7 +86,7 @@
                                             d="M6 8L8.1589 9.79908C9.99553 11.3296 10.9139 12.0949 12 12.0949C13.0861 12.0949 14.0045 11.3296 15.8411 9.79908L18 8"
                                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
                                     </svg>
-                                    <span class="truncate text-primary">ssuadmin@gmail.com</span></a>
+                                    <span class="truncate text-primary">{{ Auth::user()->email }}</span></a>
                             </li>
                             <li class="flex items-center gap-2">
                                 <svg width="24" height="24" viewbox="0 0 24 24" fill="none"
@@ -101,7 +101,7 @@
                                         d="M16.1007 13.3589C16.1007 13.3589 15.0181 14.4353 12.0631 11.4971C9.10807 8.55886 10.1907 7.48242 10.1907 7.48242"
                                         stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
                                 </svg>
-                                <span class="whitespace-nowrap" dir="ltr">+91 (500) 505-12121</span>
+                                <span class="whitespace-nowrap" dir="ltr">+91 {{ Auth::user()->phone_number }}</span>
                             </li>
                         </ul>
                         <ul class="mt-7 flex items-center justify-center gap-2">

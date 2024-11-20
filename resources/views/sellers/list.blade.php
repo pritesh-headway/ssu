@@ -1,5 +1,11 @@
 @extends('layouts.master')
 @section('content')
+<style>
+    button.delete.btn.btn-danger.btn-sm {
+        font-size: 10px;
+        margin-top: 2px;
+    }
+</style>
 <div class="animate__animated p-6" :class="[$store.app.animation]">
     <a style="float: right;" href="{{ route('seller.create')}}" class="btn btn-primary">Add Seller</a>
     <form action="{{ url('import-users') }}" method="POST" enctype="multipart/form-data">
@@ -7,12 +13,25 @@
         <input type="file" required name="file"
             accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
         <button type="submit" class="btn btn-primary" style="font-size: 14px;">Import Data</button>
+        <a class="btn btn-warning" href="{{ asset('sample/User-Sample.xlsx') }}" style="font-size: 14px;">Download
+            Sample
+            Data</a>
     </form>
     <div class="container mt-5">
         @if ($message = Session::get('success'))
         <div class="alert alert-success">
             <p>{{ $message }}</p>
         </div>
+        @endif
+        @if(session()->has('failures'))
+        <ul class="alert alert-danger">
+            @foreach (session('failures') as $failure)
+            @foreach ($failure->errors() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+            @endforeach
+        </ul>
+
         @endif
         <!-- <h2 class="mb-4" style="font-size: 2.0rem;">Events List</h2> -->
 
@@ -48,6 +67,7 @@
             processing: true,
             serverSide: true,
             searchDelay: 2000,
+            pageLength: 25,
             paging: true,
             ajax: "{{ route('seller.index') }}",
             iDisplayLength: "25",
@@ -73,7 +93,11 @@
                     orderable: false,
                     searchable: false,
                     "render": function(data, type, full, meta) {
-                        return "<img src=\"profile_images/" + data + "\" height=\"50\" width=\"50\"/>";
+                        if (data) {
+                            return "<img src=\"profile_images/" + data + "\" height=\"50\" width=\"50\"/>";
+                        } else {
+                            return "<img src=\"Image_not_available.png\" height=\"50\" width=\"50\" />";
+                        }
                     },
                 },
                 {

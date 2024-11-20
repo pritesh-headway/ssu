@@ -9,4 +9,5 @@ class Bill extends Model
 {
     use HasFactory;
     public $table = "bills";
+    protected $fillable = ['user_id', 'event_id', 'title', 'amount', 'detail', 'file', 'receipt','bill_status'];
 }

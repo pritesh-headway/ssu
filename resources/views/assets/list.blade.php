@@ -2,9 +2,23 @@
 @section('content')
 <div class="animate__animated p-6" :class="[$store.app.animation]">
     {{-- <a style="float: right;" href="{{ route('customer.create')}}" class="btn btn-primary">Add Customer</a> --}}
+    <?php if($role == 1 || $role == 2) { ?>
+    <form action="{{ route('addAsset') }}" method="POST" style="display: inline;">
+        @csrf
+        <input type="hidden" name="item_id" value="1">
+        <button style="float: right;" type="submit" class="btn btn-primary">
+            Add Asset
+        </button>
+    </form>
+    <?php } ?>
     <div class="container mt-5">
         @if ($message = Session::get('success'))
         <div class="alert alert-success">
+            <p>{{ $message }}</p>
+        </div>
+        @endif
+        @if ($message = Session::get('error'))
+        <div class="alert alert-warning">
             <p>{{ $message }}</p>
         </div>
         @endif
@@ -13,11 +27,14 @@
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Asset Title</th>
+                    <th>Name</th>
+                    <th>Title</th>
                     <th>Details</th>
                     <th>Quantity</th>
+                    <th>Total Points</th>
+                    <th>Remaining Points</th>
                     <th>Deduct Points</th>
-                    <th>Asset Date</th>
+                    <th>Date</th>
                     <th>Reason</th>
                     <th width="105px">Action</th>
                 </tr>
@@ -82,7 +99,7 @@
     $(function() {
         gb_DataTable = $("#myTable").DataTable({
             autoWidth: false,
-            order: [4, "DESC"],
+            order: [0, "DESC"],
             processing: true,
             serverSide: true,
             searchDelay: 2000,
@@ -92,6 +109,10 @@
             columns: [{
                     data: 'DT_RowIndex',
                     name: 'id'
+                },
+                {
+                    data: 'seller_name',
+                    name: 'seller_name'
                 },
                 {
                     data: 'title',
@@ -104,6 +125,14 @@
                 {
                     data: 'quantity',
                     name: 'quantity'
+                },
+                {
+                    data: 'total_points',
+                    name: 'total_points'
+                },
+                {
+                    data: 'remaining_points',
+                    name: 'remaining_points'
                 },
                 {
                     data: 'amount',

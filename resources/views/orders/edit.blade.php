@@ -14,86 +14,80 @@
             </ul>
         </div>
         @endif --}}
-        <form method="POST" action="{{ route('customer.update',$user['id']) }}" method="POST"
-            enctype="multipart/form-data">
+        {{-- {{ dd($slotdata); }} --}}
+        <form method="POST" action="{{ URL('updateslot',$id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
-            <div class="form-group">
-                <label for="exampleInputEmail1">Customer First Name</label>
-                <input type="text" class="form-control" id="name" name="name" value="{{ $user['name'] }}"
-                    aria-describedby="emailHelp" required>
-                <input type="hidden" class="form-control" id="id" name="id" value="{{ $user['id'] }}"
-                    aria-describedby="emailHelp">
-            </div>
+            <?php 
+            $quantity = $slotdata[0]->quantity;
+            $user_id = $slotdata[0]->user_id;
+            $event_id = $slotdata[0]->event_id; 
+            ?>
+            <input type="hidden" name="event_id" value="<?php echo $event_id  ?>" />
+            <input type="hidden" name="user_id" value="<?php echo $user_id  ?>" />
+            <input type="hidden" name="quantity" value="<?php echo $quantity  ?>" />
+            <table class="table table-bordered" id="dynamicTable">
+                <tr>
+                    <th>Book Slot</th>
+                    <th>From Coupon</th>
+                    <th>To Coupon</th>
+                </tr>
+                <?php if($slotdata) {  
+                   
+                    foreach ($slotdata as $key => $value) {
+                    $cnt = $key+1; 
+                    $id = $value->slot_id;
+                    $splitVal = explode(' - ', $value->slot);
+                ?>
+                <tr>
+                    <?php $slotCal = $quantity / 100; ?>
+                    <td>Slot {{ $cnt }}</td>
+                    <td><input required type="text" name="addmore[{{ $id }}][from]" value="{{ $splitVal[0] }}"
+                            id="addmorefrom_{{ $cnt }}" placeholder="From Coupon" class="form-control from" /></td>
+                    <td><input required type="text" name="addmore[{{ $id }}][to]" max="100" value="{{ $splitVal[1] }}"
+                            placeholder="To Coupon" class="form-control to" id="addmoreto_{{ $cnt }}" /></td>
+                </tr>
+                <?php } } ?>
+            </table>
             <br />
-            <div class="form-group">
-                <label for="exampleInputEmail1">Customer Last Name</label>
-                <input type="text" class="form-control" id="lname" name="lname" value="{{ $user['lname'] }}"
-                    aria-describedby="emailHelp" required>
-            </div>
-            <br />
-            <div class="form-group">
-                <label for="exampleInputEmail1">Customer Email</label>
-                <input type="text" class="form-control" id="email" name="email" value="{{ $user['email'] }}"
-                    aria-describedby="emailHelp" required>
-            </div>
-            <br />
-            <div class="form-group">
-                <label for="exampleInputEmail1">Customer Phone Number</label>
-                <input type="text" class="form-control" id="phone_number" readonly value="{{ $user['phone_number'] }}"
-                    name="phone_number" aria-describedby="emailHelp" required>
-            </div>
-            <br />
-            <div class="form-group">
-                <label for="exampleInputEmail1">Customer PAN</label>
-                <input type="text" class="form-control" id="PAN" name="PAN" value="{{ $user['PAN'] }}"
-                    aria-describedby="emailHelp">
-            </div>
-            <br />
-            <div class="form-group">
-                <label for="exampleInputEmail1">Customer GST</label>
-                <input type="text" class="form-control" id="GST" name="GST" value="{{ $user['GST'] }}"
-                    aria-describedby="emailHelp">
-            </div>
-            <br />
-            <div class="form-group">
-                <label for="exampleInputEmail1">Flat Number / Building</label>
-                <input type="text" class="form-control" id="flatNo" name="flatNo" value="{{ $user['flatNo'] }}"
-                    aria-describedby="emailHelp">
-            </div>
-            <br />
-            <div class="form-group">
-                <label for="exampleInputEmail1">Street/Area</label>
-                <input type="text" class="form-control" id="area" value="{{ $user['area'] }}" name="area"
-                    aria-describedby="emailHelp">
-            </div>
-            <br />
-            <div class="form-group">
-                <label for="exampleInputEmail1">City</label>
-                <input type="text" class="form-control" id="city" value="{{ $user['city'] }}" name="city"
-                    aria-describedby="emailHelp">
-            </div>
-            <br />
-            <div class="form-group">
-                <label for="exampleInputEmail1">State</label>
-                <input type="text" class="form-control" id="state" value="{{ $user['state'] }}" name="state"
-                    aria-describedby="emailHelp">
-            </div>
-            <br />
-            <div class="form-group">
-                <label for="exampleInputEmail1">Pincode</label>
-                <input type="text" class="form-control" id="pincode" value="{{ $user['pincode'] }}" name="pincode"
-                    aria-describedby="emailHelp">
-            </div>
-            <br />
-            <div class="form-group">
-                <input type="file" name="profile_image" class="form-control-file border">
-                <img src="{{URL('profile_images') }}/{{ $user['avatar'] }}" width="300px">
-            </div>
-            <br />
-            <button type="submit" class="btn btn-primary">Update</button>
+            <button type="submit" id="Submit" class="btn btn-primary">Update</button>
             <button type="button" onclick="history.back()" class="btn btn-secondary ">Back</button>
         </form>
     </div>
 </div>
+<script type="text/javascript">
+    var i = 0;
+    var k = 1;
+    var slot = 1;
+    var quantity = '<?php echo $quantity ?>';
+    var defaultQty = 100; // plus 100 extra bcoz by default 100 add first
+    var removeQty = 100;
+    var finalToVal;
+    var finalFromVal;
+    var firstStepVal;
+    var SlotAvailable = {{ $slotCal }}
+
+    $(".to").focusout(function(){
+
+        if(parseFloat($(".from").val()) > parseFloat($(".to").val()))
+        {
+            alert("To Coupons value must be greater than From Coupon");
+            $("#Submit").prop('disabled',true);
+            // $("#add").prop('disabled', true);
+        }
+        else {
+            $("#Submit").prop('disabled',false);
+            // $("#add").prop('disabled', false);
+        }    
+    });
+
+ 
+
+    $('.to').on("input", function() {
+        var dInput = this.value;
+
+        $("#Submit").prop('disabled', false); 
+        $("#add").prop('disabled', false);
+    });
+</script>
 @endsection

@@ -47,7 +47,7 @@
             </div>
             <br />
             <div class="form-group">
-                <label for="sel1">Select Image Type:</label>
+                <label for="sel1">Select Device Type:</label>
                 <select class="form-control" id="image_type" name="image_type">
                     <option value="3">Both</option>
                     <option value="1">Desktop</option>

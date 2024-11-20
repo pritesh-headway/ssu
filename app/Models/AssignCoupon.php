@@ -9,5 +9,5 @@ class AssignCoupon extends Model
 {
     use HasFactory;
     public $table = "assign_customer_coupons";
-    // protected $fillable = ['seller_id', 'coupon_format', 'customer_id', 'user_id', 'city'];
+    protected $fillable = ['seller_id', 'coupon_format', 'customer_id', 'user_id', 'city','event_id','coupon_number'];
 }

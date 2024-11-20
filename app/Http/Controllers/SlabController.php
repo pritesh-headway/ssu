@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\DB;
 
 class SlabController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('role:Administrator');
+    }
     /**
      * Display a listing of the resource.
      */

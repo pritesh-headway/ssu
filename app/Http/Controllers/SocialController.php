@@ -9,6 +9,10 @@ use Yajra\DataTables\Datatables;
 
 class SocialController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('role:Administrator');
+    }
     /**
      * Display a listing of the resource.
      */

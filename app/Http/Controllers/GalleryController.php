@@ -12,6 +12,10 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 class GalleryController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('role:Administrator');
+    }
     /**
      * Display a listing of the resource.
      */
@@ -58,7 +62,7 @@ class GalleryController extends Controller
             'event_id' => 'required|not_in:null',
             'type' =>'required|not_in:null',
             'title' => 'required',
-            'image' => ($request->type == 1) ? 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10240' : '',
+            'image.*' => ($request->type == 1) ? 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240' : '',
             'video' => ($request->type == 2) ? 'required|mimes:mp4,ogx,oga,ogv,ogg,webm|max:515024' : '',
             'link' => ($request->type == 3) ? 'required' : '',
         ], [
@@ -69,10 +73,23 @@ class GalleryController extends Controller
         if($request->type == 1) {
             if ($image = $request->file('image')) {
                 $destinationPath = 'public/event_images/';
-                $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
-                $image->move($destinationPath, $profileImage);
+                // $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
+                // $image->move($destinationPath, $profileImage);
 
-                $input['image'] = "$profileImage";
+                // $input['image'] = "$profileImage";
+
+                foreach ($request->file('image') as $image) {
+                    // Generate a unique filename
+                    $profileImage = date('YmdHis') . "." . $image->getClientOriginalName();
+                    
+                    // Save the image to the storage
+                    // $path = $image->storeAs('uploads', $profileImage, 'public');
+                     $image->move($destinationPath, $profileImage);
+
+                    
+                    $input['image'] = "$profileImage";
+                    Gallery::create($input);
+                }
             }
         } else if($request->type == 2) {
             if ($image = $request->file('video')) {
@@ -81,13 +98,12 @@ class GalleryController extends Controller
                 $image->move($destinationPath, $profileImage);
 
                 $input['video'] = "$profileImage";
+                Gallery::create($input);
             }
         } else {
             $input['video'] = "$request->link";
+            Gallery::create($input);
         }
-
-        Gallery::create($input);
-
         return redirect()->route('gallery.index')
             ->with('success', 'Gallery created successfully.');
     }
@@ -130,10 +146,23 @@ class GalleryController extends Controller
         if($request->type == 1) {
             if ($image = $request->file('image')) {
                 $destinationPath = 'public/event_images/';
-                $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
-                $image->move($destinationPath, $profileImage);
+                // $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
+                // $image->move($destinationPath, $profileImage);
 
-                $input['image'] = "$profileImage";
+                // $input['image'] = "$profileImage";
+                foreach ($request->file('image') as $image) {
+                    // Generate a unique filename
+                    $profileImage = date('YmdHis') . "." . $image->getClientOriginalName();
+                    
+                    // Save the image to the storage
+                     $image->move($destinationPath, $profileImage);
+
+                    
+                    $input['image'] = "$profileImage";
+                    $gallery->update($input);
+                }
+
+                $gallery->update($input);
             } else {
                 unset($input['image']);
             }
@@ -144,13 +173,15 @@ class GalleryController extends Controller
                 $image->move($destinationPath, $profileImage);
 
                 $input['video'] = "$profileImage";
+                 $gallery->update($input);
             }else {
                 unset($input['video']);
             }
         } else {
              $input['video'] = "$request->link";
+              $gallery->update($input);
         }
-        $gallery->update($input);
+       
         return redirect()->route('gallery.index')
             ->with('success', 'Gallery updated successfully');
     }

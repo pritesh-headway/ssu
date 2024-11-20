@@ -50,8 +50,24 @@
                         </button>
                     </a>
                 </li>
+                <?php 
+                    $rolename = Session::get('role_name'); 
+                    if($rolename == 'Administrator'){
+                        $role_id = '1';
+                    } else if ($rolename == 'Accountant') {
+                        $role_id = '2';
+                    } else if ($rolename == 'Verifier') {
+                        $role_id = '3';
+                    } else if ($rolename == 'followers') {
+                        $role_id = '4';
+                    } else if ($rolename == 'Logistics') {
+                        $role_id = '5';
+                    }
+                ?>
+
                 <li class="nav-item">
                     <ul>
+                        <?php if ($role_id == '1') { ?>
                         <li class="nav-item">
                             <a href="{{ URL('banner') }}" class="group {{ request()->is('banner*') ? 'active' : '' }}">
                                 <div class="flex items-center">
@@ -68,6 +84,8 @@
                                 </div>
                             </a>
                         </li>
+                        <?php } ?>
+                        <?php if ($role_id == '1') { ?>
                         <li class="nav-item">
                             <a href="{{ route('event.index') }}"
                                 class="group {{ request()->is('event*') ? 'active' : '' }}">
@@ -85,6 +103,8 @@
                                 </div>
                             </a>
                         </li>
+                        <?php } ?>
+                        <?php if ($role_id == '1') { ?>
                         <li class="nav-item">
                             <a href="{{ route('seller.index') }}"
                                 class="group {{ request()->is('seller*') ? 'active' : '' }}">
@@ -104,6 +124,8 @@
                                 </div>
                             </a>
                         </li>
+                        <?php } ?>
+                        <?php if ($role_id == '2' || $role_id == '1' || $role_id == '3') { ?>
                         <li class="nav-item">
                             <a href="{{ route('order.index') }}"
                                 class="group {{ request()->is('order*') ? 'active' : '' }}">
@@ -121,7 +143,8 @@
                                 </div>
                             </a>
                         </li>
-
+                        <?php } ?>
+                        <?php if ($role_id == '1') { ?>
                         <li class="nav-item">
                             <a href="{{ route('customercoupon.index') }}"
                                 class="group {{ request()->is('customercoupon*') ? 'active' : '' }}">
@@ -139,7 +162,8 @@
                                 </div>
                             </a>
                         </li>
-
+                        <?php } ?>
+                        <?php if ($role_id == '1') { ?>
                         <li class="nav-item">
                             <a href="{{ route('slab.index') }}"
                                 class="group {{ request()->is('slab*') ? 'active' : '' }}">
@@ -157,7 +181,8 @@
                                 </div>
                             </a>
                         </li>
-
+                        <?php } ?>
+                        <?php if ($role_id == '2' || $role_id == '1' ) { ?>
                         <li class="nav-item">
                             <a href="{{ route('bill.index') }}"
                                 class="group {{ request()->is('bill*') ? 'active' : '' }}">
@@ -177,7 +202,8 @@
                                 </div>
                             </a>
                         </li>
-
+                        <?php } ?>
+                        <?php if ($role_id == '1' || $role_id == '2' || $role_id == '3') { ?>
                         <li class="nav-item">
                             <a href="{{ route('asset.index') }}"
                                 class="group {{ request()->is('asset*') ? 'active' : '' }}">
@@ -199,7 +225,45 @@
                                 </div>
                             </a>
                         </li>
-
+                        <?php } ?>
+                        <?php if ($role_id == '1' || $role_id == '2' ) { ?>
+                        <li class="nav-item">
+                            <a href="{{ route('graphic.index') }}"
+                                class="group {{ request()->is('graphic*') ? 'active' : '' }}">
+                                <div class="flex items-center">
+                                    <svg version="1.1" id="DESIGN" xmlns="http://www.w3.org/2000/svg"
+                                        xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1800 1800"
+                                        enable-background="new 0 0 1800 1800" xml:space="preserve" fill="#000000">
+                                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
+                                        </g>
+                                        <g id="SVGRepo_iconCarrier">
+                                            <g id="Layer">
+                                                <g>
+                                                    <path fill="#333333"
+                                                        d="M1541.606,1540.146l0.009-0.008c35.598-35.594,35.598-93.52,0-129.121 c-17.24-17.236-40.178-26.745-64.569-26.745c-24.378,0-47.314,9.509-64.564,26.763c-35.588,35.584-35.588,93.51,0.009,129.104 C1448.096,1575.73,1506.014,1575.73,1541.606,1540.146z M1440.885,1511.743c-9.656-9.655-14.975-22.498-14.975-36.165 c0-13.659,5.318-26.511,14.975-36.167c9.665-9.655,22.512-14.979,36.175-14.979c13.659,0,26.497,5.323,36.161,14.979 c19.938,19.945,19.938,52.387-0.008,72.332C1493.271,1531.689,1460.831,1531.681,1440.885,1511.743z">
+                                                    </path>
+                                                    <path fill="#333333"
+                                                        d="M1700.934,402.736c0.021-0.026,0.047-0.043,0.068-0.065c0.044-0.043,0.083-0.091,0.127-0.134l5.504-5.505 l-0.138-0.139c81.836-87.814,80.038-225.814-5.507-311.356c-42.353-42.357-98.664-65.685-158.565-65.685 c-57.228,0-111.154,21.339-152.792,60.18l-0.134-0.134l-5.511,5.507c-0.043,0.046-0.09,0.085-0.134,0.131 c-0.021,0.021-0.039,0.045-0.061,0.069L66.371,1403.02l0.513,0.513c-7.364,4.749-12.699,12.548-13.98,21.907L9.578,1741.903 c-1.319,9.647,1.95,19.347,8.831,26.232c5.875,5.87,13.807,9.108,22.004,9.108c1.402,0,2.813-0.095,4.224-0.286l316.451-43.338 c9.365-1.276,17.163-6.617,21.912-13.98l0.512,0.513L1700.934,402.736z M1542.423,82.094c43.272,0,83.954,16.852,114.551,47.452 c55.643,55.638,62.276,142.02,19.897,204.983L1451.973,109.64C1478.482,91.724,1509.717,82.094,1542.423,82.094z M1389.497,167.919l229.113,229.112L383.512,1632.129l-86.195-86.19l991.423-991.409l-59.351-59.342l-991.41,991.418 l-83.585-83.586L1389.497,167.919z M76.804,1709.731l35.68-260.604l224.915,224.916L76.804,1709.731z">
+                                                    </path>
+                                                    <path fill="#333333"
+                                                        d="M506.941,804.479l56.789-56.789l-454.446-454.45l185.432-185.437l87.924,87.932l-63.792,63.783 l50.362,50.359l63.792-63.779l51.262,51.258l-63.792,63.788l50.363,50.354l63.797-63.779l51.257,51.267l-94.375,94.353 l50.376,50.363l94.362-94.362l62.502,62.498l-63.792,63.801l50.363,50.354l63.792-63.792l0.043,0.047l56.789-56.789 L323.106,22.622c-15.682-15.686-41.102-15.686-56.784,0L24.102,264.845c-15.687,15.683-15.687,41.107,0,56.789L506.941,804.479z">
+                                                    </path>
+                                                    <path fill="#333333"
+                                                        d="M1778.944,1478.287c-0.726-0.729-1.478-1.424-2.241-2.085l-505.282-505.273l-151.159,151.159l50.259,50.26 l94.371-94.37l428.79,428.782l-185.441,185.432l-479.045-479.041l-56.789,56.798l507.437,507.427 c15.682,15.69,41.102,15.69,56.788,0l242.234-242.213c0.021-0.034,0.048-0.052,0.079-0.086 C1794.63,1519.402,1794.63,1493.969,1778.944,1478.287z">
+                                                    </path>
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </svg>
+                                    <span
+                                        class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">Graphics
+                                    </span>
+                                </div>
+                            </a>
+                        </li>
+                        <?php } ?>
+                        <?php if ($role_id == '1') { ?>
                         <li class="nav-item">
                             <a href="{{ route('document.index') }}"
                                 class="group {{ request()->is('document*') ? 'active' : '' }}">
@@ -225,7 +289,8 @@
                                 </div>
                             </a>
                         </li>
-
+                        <?php } ?>
+                        <?php if ($role_id == '1') { ?>
                         <li class="nav-item">
                             <a href="{{ route('contactus.index') }}"
                                 class="group {{ request()->is('contactus*') ? 'active' : '' }}">
@@ -243,7 +308,8 @@
                                 </div>
                             </a>
                         </li>
-
+                        <?php } ?>
+                        <?php if ($role_id == '1') { ?>
                         <li class="nav-item">
                             <a href="{{ route('prize.index') }}"
                                 class="group {{ request()->is('prize*') ? 'active' : '' }}">
@@ -264,7 +330,8 @@
                                 </div>
                             </a>
                         </li>
-
+                        <?php } ?>
+                        <?php if ($role_id == '1') { ?>
                         <li class="menu nav-item">
 
                             <button type="button"
@@ -318,12 +385,70 @@
                                     <a class="group {{ request()->is('broadcast*') ? 'active' : '' }}"
                                         href="{{ route('broadcast.index') }}">Broadcast Message</a>
                                 </li>
+
+                                <li>
+                                    <a class="group {{ request()->is('broadcast*') ? 'active' : '' }}"
+                                        href="{{ route('home.zoomMeeting') }}">Zoom Meeting</a>
+                                </li>
                             </ul>
                         </li>
+                        <?php } ?>
+                        <?php if ($role_id == '1' || $role_id == '2') { ?>
+                        <li class="menu nav-item">
 
+                            <button type="button"
+                                class="expnadClass nav-link group {{ request()->is('reports') ? 'active' : '' }}"
+                                :class="{}" @click="activeDropdown === 'reports' ? activeDropdown = null : activeDropdown =
+                                                        'reports'">
+                                <div class="flex items-center">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
+                                        </g>
+                                        <g id="SVGRepo_iconCarrier">
+                                            <path
+                                                d="M9 21H15M9 21V16M9 21H3.6C3.26863 21 3 20.7314 3 20.4V16.6C3 16.2686 3.26863 16 3.6 16H9M15 21V9M15 21H20.4C20.7314 21 21 20.7314 21 20.4V3.6C21 3.26863 20.7314 3 20.4 3H15.6C15.2686 3 15 3.26863 15 3.6V9M15 9H9.6C9.26863 9 9 9.26863 9 9.6V16"
+                                                stroke="#000000" stroke-width="1.5"></path>
+                                        </g>
+                                    </svg>
+                                    <span
+                                        class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">Reports</span>
+                                </div>
+                                <?php 
+                                                        $expnad = (request()->is('reports') == 1) ? '!rotate-90' : 'rtl:rotate-180';  
+                                                        ?>
+                                <div class="{{ $expnad }}" :class="{'!rotate-90' : activeDropdown === 'reports'}">
+                                    <svg width="16" height="16" viewbox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 5L15 12L9 19" stroke="currentColor" stroke-width="1.5"
+                                            stroke-linecap="round" stroke-linejoin="round"></path>
+                                    </svg>
+                                </div>
+                            </button>
+                            <ul x-cloak="" x-show="activeDropdown === 'reports'" x-collapse=""
+                                class="sub-menu text-gray-500">
+                                <li>
+                                    <a class="group {{ request()->is('reports') ? 'active' : '' }}"
+                                        href="{{ route('reports.index') }}">Coupons Count Wise Reports</a>
+                                </li>
+                                <?php if ($role_id == '1') { ?>
+                                <li>
+                                    <a class="group {{ request()->is('reportssellercustomer*') ? 'active' : '' }}"
+                                        href="{{ route('reportssellercustomer.index') }}">Seller Customer Coupons
+                                        Assign Reports</a>
+                                </li>
+
+                                <li>
+                                    <a class="group {{ request()->is('reportscoupons*') ? 'active' : '' }}"
+                                        href="{{ route('reportscoupons.index') }}">Seller Coupons
+                                        Reports Data</a>
+                                </li>
+                                <?php } ?>
+                            </ul>
+                        </li>
+                        <?php } ?>
                     </ul>
                 </li>
-
             </ul>
         </div>
     </nav>

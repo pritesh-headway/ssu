@@ -54,6 +54,10 @@ Route::post('v1/messageChatList', [ApiController::class, 'messageChatList']);
 Route::post('v1/sendNotification', [ApiController::class, 'sendNotification']);
 Route::post('v1/assetsList', [ApiController::class, 'assetsList']);
 Route::post('v1/addAssets', [ApiController::class, 'addAssets']);
+Route::post('v1/addGraphics', [ApiController::class, 'addGraphics']);
+Route::post('v1/graphicsList', [ApiController::class, 'graphicsList']);
+Route::post('v1/reportCouponDownload', [ApiController::class, 'reportCouponDownload']);
+
 
 //profiles
 Route::post('v1/profile/upload', [ProfileController::class, 'uploadProfileImage']);

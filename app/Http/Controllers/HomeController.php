@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Event;
+use App\Models\Meeting;
+use App\Models\UserDevices;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use App\Services\FcmNotificationService;
 
 class HomeController extends Controller
 {
@@ -15,12 +18,14 @@ class HomeController extends Controller
      *
      * @return void
      */
+    protected $fcmNotificationService;
     public $base_url;
-
-    public function __construct()
+    
+    public function __construct(FcmNotificationService $fcmNotificationService)
     {
+        $this->fcmNotificationService = $fcmNotificationService;
         $this->middleware('auth');
-         $this->base_url = url('/');
+        $this->base_url = url('/');
     }
 
     /**
@@ -32,7 +37,6 @@ class HomeController extends Controller
     {
         $eventList = Event::all()->where('status', 1);
         $orderList = DB::table('coupons_order')
-            // ->leftJoin('users', 'users.id', '=', 'coupons_order.user_id')
             ->leftJoin('users', function($join) {
                 $join->on('coupons_order.user_id', '=', 'users.id')
                     ->where('users.status', '=', '1');
@@ -45,20 +49,24 @@ class HomeController extends Controller
         $todaysRemainingCoupons= [];
         $soldCoupon= [];
         $pedingCoupon= [];
+        $declinedCoupon = [];
         foreach ($orderList as $key => $value) {
-            if($value->order_status == 'Approved') {
+            if ($value->order_status == 'Delivered') {
                 $soldCoupon[] = $value->quantity;
             }
-            if($value->order_status == 'Pending') {
+            if ($value->order_status == 'Pending') {
                 $pedingCoupon[] = $value->quantity;
             }
+            if ($value->order_status == 'Declined') {
+                $declinedCoupon[] = $value->quantity;
+            }
 
-            if(date('Y-m-d', strtotime($value->created_at)) == date('Y-m-d')) {
+            if (date('Y-m-d', strtotime($value->created_at)) == date('Y-m-d')) {
                 $todaysCoupons[] = $value->quantity;
             }
 
-            if($value->order_status == 'Pending') {
-                if(date('Y-m-d', strtotime($value->created_at)) == date('Y-m-d')) {
+            if ($value->order_status == 'Pending') {
+                if (date('Y-m-d', strtotime($value->created_at)) == date('Y-m-d')) {
                     $todaysRemainingCoupons[] = $value->quantity;
                 }
             }
@@ -70,10 +78,14 @@ class HomeController extends Controller
         $todaysCoupons = array_sum($todaysCoupons);
         $todaysRemainingCoupons = array_sum($todaysRemainingCoupons);
         $pedingCoupon = count($pedingCoupon);
+        $declinedCouponSum = array_sum($declinedCoupon);
+        $declinedCoupon = count($declinedCoupon);
+        
         
         $customerCount = User::all()->whereNotIn('id', 1)
                         ->where('user_type', '3')
                         ->where('status', '1')->count();
+                        
         $customerTodayCount = User::all()->whereNotIn('id', 1)
                             ->where('user_type', '3')
                             ->where('status', '1')
@@ -88,6 +100,47 @@ class HomeController extends Controller
                             ->count();
 
         $base_url = $this->base_url;
-        return view('home', compact('eventList','orderList','base_url','totalCoupn','soldCoupon','sellerCount','customerCount','todaysCoupons','todaysRemainingCoupons','customerTodayCount','sellerTodayCount','pedingCoupon','enquiryCoupn'));
+        return view('home', compact('eventList','orderList','base_url','totalCoupn','soldCoupon','sellerCount','customerCount','todaysCoupons','todaysRemainingCoupons','customerTodayCount','sellerTodayCount','pedingCoupon','enquiryCoupn','declinedCoupon','declinedCouponSum'));
     }
+
+    public function zoomMeeting() {
+        $linkData = Meeting::first();
+        // dd($linkData['id']);
+        return view('meeting', compact('linkData'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $isFlag = $request->has('is_today') ? 1 : 0;
+        $cms = Meeting::find($id);
+        $cms->meeting_title = $request->meeting_title;
+        $cms->link = $request->link;
+        $cms->is_today = $isFlag;
+        $cms->save();
+        
+        if($isFlag == 1) {
+            $sellerData = User::select('users.id')
+                ->where('users.user_type', '=', "2")
+                ->get()->toArray();
+            $sellerIds = [];
+            foreach ($sellerData as $ids) {
+                $sellerIds[] = $ids['id'];
+            }
+
+            $newData  = json_encode(array('type'=> 'zoom_meeting'));
+            $body = array('receiver_id' => $sellerIds,'title' => $request->meeting_title ,'message' => 'Weekly Zoom Meeting','type' => 'zoom_meeting', 'data' => $newData, 'sound' => 'meetingSound.wav');
+
+            $sendNotification = $this->fcmNotificationService->sendFcmAdminNotification($body);
+            // $notifData = json_decode($sendNotification->getContent(), true);
+            // if (isset($notifData['status']) && $notifData['status'] == true) {
+            //     $sendNotification->getContent();
+            // } else {
+            //     $sendNotification->getContent();
+            // }
+        }
+        
+        return redirect()->route('home.zoomMeeting')
+            ->with('success', 'Updated successfully');
+    }
+
 }

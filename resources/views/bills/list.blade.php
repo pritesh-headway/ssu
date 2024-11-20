@@ -1,7 +1,16 @@
 @extends('layouts.master')
 @section('content')
 <div class="animate__animated p-6" :class="[$store.app.animation]">
-    {{-- <a style="float: right;" href="{{ route('customer.create')}}" class="btn btn-primary">Add Customer</a> --}}
+    {{-- <a style="float: right;" href="{{ route('addBill')}}" class="btn btn-primary">Add Bill</a> --}}
+    <?php if($role == 1 || $role == 2) { ?>
+    <form action="{{ route('addBill') }}" method="POST" style="display: inline;">
+        @csrf
+        <input type="hidden" name="item_id" value="1">
+        <button style="float: right;" type="submit" class="btn btn-primary">
+            Add Bill
+        </button>
+    </form>
+    <?php } ?>
     <div class="container mt-5">
         @if ($message = Session::get('success'))
         <div class="alert alert-success">
@@ -13,6 +22,7 @@
             <thead>
                 <tr>
                     <th>No</th>
+                    <th>Seller Name</th>
                     <th>BIll Title</th>
                     <th>Amount</th>
                     <th>Details</th>
@@ -60,7 +70,7 @@
     $(function() {
         gb_DataTable = $("#myTable").DataTable({
             autoWidth: false,
-            order: [4, "DESC"],
+            order: [0, "DESC"],
             processing: true,
             serverSide: true,
             searchDelay: 2000,
@@ -70,6 +80,13 @@
             columns: [{
                     data: 'DT_RowIndex',
                     name: 'id'
+                },
+                {
+                    data: 'seller_name',
+                    name: 'seller_name',
+                    "render": function(data, type, full, meta) {
+                        return "<a target='_blank' href=\"{{ URL::to('bill/') }}/"+ full.id +"\">"+data+"<a/>";
+                    },
                 },
                 {
                     data: 'title',
@@ -93,7 +110,12 @@
                     name: 'file',
                     searchable: false,
                     "render": function(data, type, full, meta) {
-                        return "<a target='_blank' href=\"bills/" + data + "\"><img src=\"bills/" + data + "\" height=\"50\" width=\"50\"/><a/>";
+                        ext = data.split('.').pop();
+                        if(ext == 'pdf') {
+                            return "<a target='_blank' href=\"bills/" + data + "\">" + data + "<a />";
+                        } else {
+                            return "<a target='_blank' href=\"bills/" + data + "\"><img src=\"bills/" + data + "\" height=\"50\" width=\"50\"/><a/>";
+                        }
                     },
                 },
                 {

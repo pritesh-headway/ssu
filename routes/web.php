@@ -21,6 +21,17 @@ use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\BroadcastController;
+use App\Http\Controllers\GraphicController;
+use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\ReportsSellerCustomerController;
+use App\Http\Controllers\ReportsCouponsController;
+use App\Http\Controllers\TestingController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\UserManagementController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
 // use Symfony\Component\HttpFoundation\Request;
 use Illuminate\Http\Request;
 use App\Imports\UsersImport;
@@ -49,11 +60,27 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
+
+Route::match(['get', 'post'], 'winner-number', function (Request $request) {
+    $number = $request->number; 
+    $users = DB::table('assign_customer_coupons')
+    ->select('assign_customer_coupons.customer_id', DB::raw("CONCAT(users.name, ' ', users.lname) AS customer_name"), 'users.city', 'users.phone_number')
+            ->leftJoin('users', 'users.id', '=', 'assign_customer_coupons.customer_id')
+            ->where('coupon_number', $number)->first();
+
+    return view('winner-form', ['data' => $users]);
+});
+
 Route::group(['middleware' => 'auth'], function () {
     // Route::get('home', function () {
     //     return view('home');
     // });
-      Route::get('home', [HomeController::class, 'index'])->name('home.index');
+    Route::get('home', [HomeController::class, 'index'])->name('home.index');
+    Route::get('/zoom-meeting', [HomeController::class, 'zoomMeeting'])->name('home.zoomMeeting');
+    Route::put('/home/update/{id}', [HomeController::class, 'update'])->name('home.update');
+
+    // Route::match(['post', 'put'], '/home/update', [HomeController::class, 'update'])->name('home.update');
+
 
 
     Route::resource('banner', BannerController::class);
@@ -74,7 +101,14 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('gallery', GalleryController::class);
     Route::resource('asset', AssetController::class);
     Route::resource('broadcast', BroadcastController::class);
+    Route::resource('graphic', GraphicController::class);
+    Route::resource('reports', ReportsController::class);
+    Route::resource('reportssellercustomer', ReportsSellerCustomerController::class);
+    Route::resource('reportscoupons', ReportsCouponsController::class);
+    Route::resource('testing', TestingController::class);
+    Route::delete('reportssellercustomer/{param1}/{param2}', [ReportsSellerCustomerController::class, 'destroy']);
 
+    Route::get('graphic', [GraphicController::class, 'index'])->name('graphic.index');
     Route::get('broadcast', [BroadcastController::class, 'index'])->name('broadcast.index');
     Route::get('asset', [AssetController::class, 'index'])->name('asset.index');
     Route::get('gallery', [GalleryController::class, 'index'])->name('gallery.index');
@@ -94,12 +128,23 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('event', [EventController::class, 'index'])->name('event.index');
     Route::get('banner', [BannerController::class, 'index'])->name('banner.index');
     Route::post('ajaxRequest', [OrderController::class, 'checkPrevCoupons'])->name('ajaxRequest.post');
+    Route::get('/details/{id}', [SellerController::class, 'details']);
 
-    Route::post('import-users', function (Request $request) {
-        Excel::import(new UsersImport, $request->file('file'));
-        return back()->with('success', 'Users Imported Successfully');
-    });
+    Route::post('import-users', [SellerController::class, 'importUsers']);
+    Route::post('import-coupons', [CustomercouponController::class, 'importCoupons']);
+    Route::get('/slots/{id}', [OrderController::class, 'slots']);
+    Route::put('/updateslot/{id}', [OrderController::class, 'updateslot']);
 
+    Route::match(['get', 'post'], '/addBill', [BillController::class, 'addBill'])->name('addBill');
+    Route::post('bill/insertData', [BillController::class, 'insertData']);
+    
+    Route::match(['get', 'post'], '/addAsset', [AssetController::class, 'addAsset'])->name('addAsset');
+    Route::post('asset/insertData', [AssetController::class, 'insertData']);
+    Route::get('/asset/points/{id}/{idd}', [AssetController::class, 'getPoints'])->name('asset.getPoints');
+
+    // Route::get('bill/savekeywordDetails', [BillController::class, 'bill/savekeywordDetails']);
+    // Route::post('reports/sellerCustomerCoupons', [ReportsController::class, 'sellerCustomerCoupons'])->name('reports.sellerCustomerCoupons');
+    // Route::get('reports/sellerCustomerCouponsList', [ReportsController::class, 'sellerCustomerCouponsList'])->name('reports.sellerCustomerCouponsList');
 });
 
 Auth::routes();

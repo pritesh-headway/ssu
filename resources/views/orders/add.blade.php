@@ -82,8 +82,6 @@
     var SlotAvailable = {{ $slotCal }}
 
     $("#Submit").click(function() {
-        // console.log(slot +'=='+ SlotAvailable);
-        
         if (slot != SlotAvailable) {
             alert('Please add proper unique slot.');
             return false;

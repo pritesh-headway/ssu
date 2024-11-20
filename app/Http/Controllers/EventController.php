@@ -9,6 +9,10 @@ use Illuminate\Support\Carbon;
 
 class EventController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('role:Administrator');
+    }
     /**
      * Display a listing of the resource.
      */
@@ -55,7 +59,7 @@ class EventController extends Controller
             'prize' => 'required|numeric',
             'start_date' => 'required|unique:events,start_date',
             'end_date' => 'required|unique:events,end_date',
-            'event_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5042',
+            'event_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5042',
         ]);
         $input = $request->all();
         if ($image = $request->file('event_image')) {

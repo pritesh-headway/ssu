@@ -47,7 +47,7 @@
 
             <?php if($gallery->type == 1) { ?>
             <div class="form-group image ">
-                <input type="file" name="image" class="form-control-file border"><br />
+                <input type="file" multiple name="image[]" class="form-control-file border"><br />
                 <img width="100" height="80" src="{{URL('public/event_images') }}/{{ $gallery->image }}" width="300px">
                 @error('image')
                 <span class="text-danger">{{ $message }}</span>

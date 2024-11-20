@@ -8,9 +8,15 @@ use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Datatables;
 use Illuminate\Support\Facades\DB;
 use Hash;
+use App\Imports\UsersImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SellerController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('role:Administrator');
+    }
     /**
      * Display a listing of the resource.
      */
@@ -21,7 +27,8 @@ class SellerController extends Controller
             return Datatables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
-                    $actionBtn = '<a href="' . route("seller.edit", $row->id) . '"
+                    $actionBtn = '<a href="' . URL("details/". $row->id) . '"
+              class="store btn btn-warning btn-sm approve">View</a> <a href="' . route("seller.edit", $row->id) . '"
               class="edit btn btn-success btn-sm">Edit</a> 
               <button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Delete</button>
               &nbsp;<a href="' . route("seller.show", $row->id) . '"
@@ -53,7 +60,20 @@ class SellerController extends Controller
             'lname' => 'required|string|max:50',
             'storename' => 'required|string|max:100',
             'email' => 'required|string|email|max:255',
-            'phone_number' => 'required|numeric|digits:10|unique:users',
+            'phone_number' => [
+                'required',
+                'numeric',
+                'digits:10',
+                function ($attribute, $value, $fail) {
+                    $exists = DB::table('users')
+                        ->where('phone_number', $value)
+                        ->where('status', 1)
+                        ->exists();
+                    if ($exists) {
+                        $fail('The phone number has already been taken by an active user.');
+                    }
+                },
+            ],
             'PAN' => 'required',
             'GST' => 'required',
             'flatNo' => 'required',
@@ -61,7 +81,7 @@ class SellerController extends Controller
             'city' => 'required',
             'state' => 'required',
             'pincode' => 'required',
-            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5042',
+            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5042',
         ]);
         $input = $request->all();
 
@@ -96,7 +116,7 @@ class SellerController extends Controller
     {
        
         $couponsList = DB::table('seller_coupons')
-            ->select('seller_coupons.coupon_number','seller_coupons.is_assign', DB::raw("CASE WHEN seller_coupons.is_assign = 0 THEN 'Available' WHEN seller_coupons.is_assign = 1 THEN 'Assigned'  ELSE 'Available' END is_assign"))
+            ->select(DB::raw("CONCAT('#', seller_coupons.coupon_number) AS coupon_number"),'seller_coupons.is_assign', DB::raw("CASE WHEN seller_coupons.is_assign = 0 THEN 'Available' WHEN seller_coupons.is_assign = 1 THEN 'Assigned'  ELSE 'Available' END is_assign"))
             ->leftJoin('events', 'events.id', '=', 'seller_coupons.event_id')
             ->where('seller_coupons.user_id', '=', $id)->get();
  
@@ -107,6 +127,15 @@ class SellerController extends Controller
         }
 
         return view('sellers.show', compact('couponsList','id'));
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function details($id)
+    {
+        $user = User::find($id);
+        return view('sellers.details', compact('user'));
     }
 
     /**
@@ -175,5 +204,23 @@ class SellerController extends Controller
 
         return redirect()->route('seller.index')
             ->with('success', 'Seller deleted successfully');
+    }
+
+    public function importUsers(Request $request) {
+        // Get the uploaded file
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx',
+        ]);
+
+        try {
+            // dd($request->file('file'));
+            Excel::import(new UsersImport, $request->file('file'));
+
+            return back()->with('success', 'Users imported successfully!');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+           $failures = $e->failures();
+
+            return back()->with('failures', $failures);
+        }
     }
 }

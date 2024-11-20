@@ -29,8 +29,7 @@
             <br />
             <div class="form-group">
                 <label for="exampleInputEmail1">Prize Qty</label>
-                <input type="text" class="form-control isNumberValid" id="prize_qty" name="prize_qty"
-                    aria-describedby="emailHelp">
+                <input type="text" class="form-control " id="prize_qty" name="prize_qty" aria-describedby="emailHelp">
                 @error('prize_qty')
                 <span class="text-danger">{{ $message }}</span>
                 @enderror

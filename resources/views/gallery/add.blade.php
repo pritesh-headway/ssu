@@ -24,9 +24,9 @@
                 <label for="exampleInputEmail1">Gallery Type</label>
                 <select class="form-control" name="type" id="type">
                     <option value="">Select Gallery Type</option>
-                    <option value="1"> Image</option>
-                    <option value="2"> Video</option>
-                    <option value="3"> Youtube Link</option>
+                    <option value="1" {{ (old('type')==1) ? 'selected' : '' }}> Image</option>
+                    <option value="2" {{ (old('type')==2) ? 'selected' : '' }}> Video</option>
+                    <option value="3" {{ (old('type')==3) ? 'selected' : '' }}> Youtube Link</option>
                 </select>
                 @error('type')
                 <span class="text-danger">{{ $message }}</span>
@@ -42,21 +42,21 @@
                 @enderror
             </div>
             <br />
-            <div class="form-group image hide">
-                <input type="file" accept="image/*" name="image" id="image" class="form-control-file border">
+            <div class="form-group image  {{ (old('type')==1) ? 'show' : 'hide' }}">
+                <input type="file" multiple accept="image/*" name="image[]" id="image" class="form-control-file border">
                 @error('image')
                 <span class="text-danger">{{ $message }}</span>
                 @enderror
             </div>
             <br />
-            <div class="form-group video hide">
+            <div class="form-group video {{ (old('type')==2) ? 'show' : 'hide' }}">
                 <input type="file" accept="video/*" name="video" id="video" class="form-control-file border">
                 @error('video')
                 <span class="text-danger">{{ $message }}</span>
                 @enderror
             </div>
             <br />
-            <div class="form-group link hide">
+            <div class="form-group link {{ (old('type')==3) ? 'show' : 'hide' }}">
                 <label for="exampleInputEmail1">Youtube Link</label>
                 <input type="text" class="form-control " id="link" name="link" aria-describedby="emailHelp">
                 @error('link')

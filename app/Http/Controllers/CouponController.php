@@ -8,6 +8,10 @@ use Yajra\DataTables\Datatables;
 
 class CouponController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('role:Administrator,Accountant,Verifier');
+    }
     /**
      * Display a listing of the resource.
      */

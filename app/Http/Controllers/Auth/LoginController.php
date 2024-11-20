@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use DB;
-use Auth;
-use Session;
+// use Auth;
+// use Session;
 use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -15,6 +15,8 @@ use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Http;
 use App\Rules\MatchOldPassword;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class LoginController extends Controller
 {
@@ -70,7 +72,6 @@ class LoginController extends Controller
             
             $email     = $request->email;
             $password  = $request->password;
-
             if (Auth::attempt(['email'=>$email,'password'=>$password])) {
                 /** get session */
                 $user = Auth::User();
@@ -85,16 +86,17 @@ class LoginController extends Controller
                 Session::put('avatar', $user->avatar);
                 Session::put('position', $user->position);
                 Session::put('department', $user->department);
-                Toastr::success('Login successfully :)','Success');
-                return redirect()->route('/');
+                Toastr::success('Login successfully :)','Success', ["positionClass" => "toast-top-right"]);
+                return redirect('home');
             } else {
-                Toastr::error('fail, WRONG USERNAME OR PASSWORD :)','Error');
+                Toastr::error('WRONG USERNAME OR PASSWORD :)', 'Fail', ["positionClass" => "toast-top-right"]);
+
                 return redirect('login');
             }
            
         } catch(\Exception $e) {
             DB::rollback();
-            Toastr::error('fail, LOGIN :)','Error');
+            Toastr::error('Fail LOGIN :)','Error', ["positionClass" => "toast-top-right"]);
             return redirect()->back();
         }
     }

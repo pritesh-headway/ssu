@@ -5,10 +5,18 @@ a.store.btn.btn-success.btn-sm.approve {
 }
 button.delete.btn.btn-danger.btn-sm.decline {
     font-size: 10px;
-    position: absolute;
-        margin-left: 3px;
+    margin-top: 1px;
+    /* position: absolute; */
+    margin-left: 0px;
+    width: 55px;
 }
-
+button.store.btn.btn-deliver.btn-sm {
+    font-size: 10px;
+    margin-left: 3px;
+}
+a.store.btn.btn-warning.btn-sm.approve {
+    font-size: 10px;
+}
 a.edit.btn.btn-success.btn-sm {
     font-size: 10px;
 }
@@ -38,4 +46,22 @@ button.store.btn.btn-success.btn-sm.approve {
 .ctmHeight {
     height: 90px;
     width: 300px;
+}
+img:hover:not(.team-single-imgs) {
+  transform: scale(6);
+  z-index: 9999;
+  position: absolute;
+}
+
+.dt-buttons {
+    float: right !important;
+    margin-top: -4%;
+}
+div#myTable_length {
+    position: absolute;
+}
+button.dt-button.buttons-excel.buttons-html5.btn.btn-success.btn-sm {
+    color: #fff;
+    background-color: #198754;
+    border-color: #198754;
 }

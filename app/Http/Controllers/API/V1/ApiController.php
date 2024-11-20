@@ -18,8 +18,10 @@ use App\Models\Winner;
 use App\Models\Chatmessage;
 use App\Models\UserDevices;
 use App\Models\Asset;
+use App\Models\Meeting;
 use App\Models\Reward;
 use App\Models\User;
+use App\Models\Graphic;
 use Carbon\Carbon;
 use Hash;
 use Illuminate\Http\Request;
@@ -29,6 +31,8 @@ use App\Services\CurlApiService;
 use App\Services\FcmNotificationService;
 use Google\Client as GoogleClient;
 use Illuminate\Support\Facades\Storage;
+use App\Exports\CouponsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ApiController extends Controller
 {
@@ -40,6 +44,7 @@ class ApiController extends Controller
     public $receipt_path;
     public $event_video_path;
     public $bill_path;
+    public $graphic_path;
     public $winner_path;
     public $doc_path;
     public $prize_path;
@@ -55,6 +60,7 @@ class ApiController extends Controller
         $this->receipt_path = '/public/receipt_images/';
         $this->event_video_path = '/public/event_videos/';
         $this->bill_path = '/public/bills/';
+        $this->graphic_path = '/public/graphics/';
         $this->doc_path = '/public/documents/';
         $this->prize_path = '/public/prize_images/';
         $this->curlApiService = $curlApiService;
@@ -182,7 +188,7 @@ www.headway.guru
         $data['TemplateID'] = env('API_Template_ID');
         $data['MsgText'] = $message;
         if ($chkUser) {
-            if($mobile != '9879879879' && $mobile != '7874600096' && $mobile != '7567300096') { // remove once live apk
+            if($mobile != '9879879879' && $mobile != '7874600096' && $mobile != '7567300096' && $mobile != '9970831750') { // remove once live apk
                 $chkUser->otp = $otp;
                 $chkUser->otp_expires_at = $otpExpiresAt;
                 $chkUser->save();
@@ -264,12 +270,8 @@ www.headway.guru
         auth()->logout();
         $token = $request->header('token');
         $user = User::where('id', $request->user_id)->where('status', '1')->first();
-        if($user) {
-            $user->status = 1;
-            $user->save();
-        }
 
-        $userDevice = UserDevices::where('user_id', $request->user_id)->where('status', '1')->where('device_token', $token)->first();
+        $userDevice = UserDevices::where('user_id', $request->user_id)->where('login_token', $token)->where('status', '1')->first();
         if($userDevice) {
             $userDevice->device_token = '';
             $userDevice->status = '0';
@@ -280,7 +282,7 @@ www.headway.guru
         DB::table('user_devices')
             ->join("users", "user_devices.user_id", "=", "users.id")
             ->where("user_devices.login_token", "=", $token)
-            ->where("users.id", "=", $request->user_id)
+            ->where("user_devices.user_id", "=", $request->user_id)
             ->update(["user_devices.status" => '0', "user_devices.updated_at" => date("Y-m-d H:i:s"), 'user_devices.device_token' => '']);
 
         $result['status'] = true;
@@ -426,12 +428,11 @@ www.headway.guru
             $sellers = User::select('users.id', 'users.user_id', 'users.user_type', 'users.name', 'users.lname', 'users.storename', 'users.email', 'users.phone_number', 'users.city', 'users.avatar', 'users.PAN', 'users.GST', 'users.flatNo', 'users.pincode', 'users.area', 'users.state', 'users.is_first_time')
             ->where('users.user_type', '2')->where('users.status', 1)->where('users.id', '!=', 1)->where('users.id', '!=', $user_id)->groupBy('users.id')->paginate($this->per_page_show, ['*'], 'page', $page_number);
             // $query = DB::getQueryLog();
-            // dd($query);
            
             $seller = DB::select("SELECT users.id,users.user_id,users.user_type, users.name, users.lname,users.storename ,users.email,users.phone_number,users.area,users.state,users.is_first_time,users.date_of_birth,users.otp,users.PAN,users.GST,users.flatNo,users.pincode,users.city,users.avatar ,chat_list.id as chat_id
                 FROM `users` 
                 LEFT JOIN `chat_list` on (users.id = `chat_list`.`sender_id` OR users.id = `chat_list`.`receiver_id`) AND (`chat_list`.`receiver_id` = $user_id OR `chat_list`.`sender_id` = $user_id)
-                WHERE `users`.`user_type` = '2' and `users`.`status` = '1' and `users`.`id` != '1'  and `users`.`id` != $user_id 
+                WHERE `users`.`user_type` = '2' and `users`.`status` = '1' and `users`.`id` != '1' and `users`.`id` != '155'  and `users`.`id` != $user_id 
                 GROUP BY users.id LIMIT $this->per_page_show OFFSET $offset");
 
         } else {
@@ -441,7 +442,7 @@ www.headway.guru
             $seller = DB::select("SELECT users.id,users.user_id,users.user_type, users.name, users.lname,users.storename ,users.email,users.phone_number,users.area,users.state,users.is_first_time,users.date_of_birth,users.otp,users.PAN,users.GST,users.flatNo,users.pincode,users.city,users.avatar ,chat_list.id as chat_id
                 FROM `users` 
                 LEFT JOIN `chat_list` on (users.id = `chat_list`.`sender_id` OR users.id = `chat_list`.`receiver_id`) AND (`chat_list`.`receiver_id` = $user_id OR `chat_list`.`sender_id` = $user_id)
-                WHERE `users`.`user_type` = '2' AND (`users`.`city` LIKE '%$search%' OR `users`.`storename` LIKE '%$search%' ) and `users`.`status` = '1' and `users`.`id` != '1'  and `users`.`id` != $user_id 
+                WHERE `users`.`user_type` = '2' AND (`users`.`city` LIKE '%$search%' OR `users`.`storename` LIKE '%$search%' ) and `users`.`status` = '1' and `users`.`id` != '1' and `users`.`id` != '155' and `users`.`id` != $user_id 
                 GROUP BY users.id LIMIT $this->per_page_show OFFSET $offset");
         }
         $userData = [];
@@ -499,6 +500,7 @@ www.headway.guru
         $page_number = $request->page;
         $base_url = $this->base_url;
         $checkToken = $this->tokenVerify($token);
+        $search = $request->search;
         // Decode the JSON response
         $userData = json_decode($checkToken->getContent(), true);
         if ($userData['status'] == false) {
@@ -521,11 +523,18 @@ www.headway.guru
 
         // assign coupons list for seller wise
         $listSellerCustomer = DB::table('assign_customer_coupons')
-            ->select('assign_customer_coupons.customer_id', DB::raw("CONCAT(users.name, ' ', users.lname) AS customer_name"), DB::raw("CONCAT(users2.name, ' ', users2.lname) AS seller_name"), 'users.city', 'users.phone_number', DB::raw("COUNT(assign_customer_coupons.coupon_number) AS totalCoupon"))
+            ->select('assign_customer_coupons.customer_id', DB::raw("CONCAT(users.name, ' ', users.lname) AS customer_name"), DB::raw("users2.storename AS seller_name"), 'users.city', 'users.phone_number', DB::raw("COUNT(assign_customer_coupons.coupon_number) AS totalCoupon"))
             ->leftJoin('users', 'users.id', '=', 'assign_customer_coupons.customer_id')
             ->leftJoin('users AS users2', 'users2.id', '=', 'assign_customer_coupons.user_id')
             ->where('assign_customer_coupons.user_id', '=', $user_id)
             ->where('assign_customer_coupons.event_id', '=', $event_id)
+            ->where(function($query) use ($search) {
+                if($search) {
+                    $query->where(DB::raw("CONCAT(users.name, ' ', users.lname)"), 'LIKE', "%{$search}%")
+                    ->orWhere('users.phone_number', 'LIKE', "%{$search}%")
+                    ->orWhere('assign_customer_coupons.coupon_number', 'LIKE', "%{$search}%");
+                }
+             })
             ->groupBy('assign_customer_coupons.customer_id')
             ->paginate($this->per_page_show, ['*'], 'page', $page_number);
 
@@ -555,6 +564,7 @@ www.headway.guru
         $page_number = $request->page;
         $base_url = $this->base_url;
         $checkToken = $this->tokenVerify($token);
+        $search = $request->search;
         // Decode the JSON response
         $userData = json_decode($checkToken->getContent(), true);
         if ($userData['status'] == false) {
@@ -582,6 +592,13 @@ www.headway.guru
             ->leftJoin('events', 'events.id', '=', 'assign_customer_coupons.event_id')
             ->where('assign_customer_coupons.user_id', '=', $user_id)
             ->where('assign_customer_coupons.event_id', '=', $event_id)
+            ->where(function($query) use ($search) {
+                if($search) {
+                    $query->where(DB::raw("CONCAT(users.name, ' ', users.lname)"), 'LIKE', "%{$search}%")
+                    ->orWhere('users.phone_number', 'LIKE', "%{$search}%")
+                    ->orWhere('assign_customer_coupons.coupon_number', 'LIKE', "%{$search}%");
+                }
+             })
             ->paginate($this->per_page_show, ['*'], 'page', $page_number);
 
         $pagination = [
@@ -705,7 +722,7 @@ www.headway.guru
         $validator = Validator::make($request->all(), [
             'customer_name' => ($request->customer_id == '0') ? 'required|string' : '',
             'customer_city' => ($request->customer_id == '0') ? '' : '',
-            'phone_number' => ($request->customer_id == '0' && $isCustomer == 0) ? 'required|numeric|digits:10|unique:users' : '',
+            'phone_number' => ($request->customer_id == '0' && $isCustomer == 0) ? 'nullable|numeric|digits:10' : '',
             'assign_type' => 'required',
             'coupon_number' => ($request->assign_type == '1') ? 'required' : '',
             'coupon_range_from' => ($request->assign_type == '2') ? 'required' : '',
@@ -732,7 +749,7 @@ www.headway.guru
             ->select(DB::raw('SUM(coupons_order.quantity) as quantity'))
             ->where('coupons_order.user_id', '=', $user_id)
             ->where('coupons_order.event_id', '=', $event_id)
-            ->where('coupons_order.order_status', '=', '1')
+            ->where('coupons_order.order_status', '=', '3')
             ->where('coupons_order.status', '=', '1')
             ->groupBy('coupons_order.event_id')
             ->groupBy('coupons_order.user_id')
@@ -849,8 +866,20 @@ www.headway.guru
             $userCheck = User::where('phone_number', ($request->phone_number) ? $request->phone_number : '')->count();
             $userGetData = User::where('phone_number', ($request->phone_number) ? $request->phone_number : '')->first();
             if ($userCheck == 0) {
+                $mname = '';
+                $lname = '';
+                $llname = '';
+                if(isset($name[1])) {
+                    $mname = $name[1];
+                }
+                if(isset($name[2])) {
+                    $lname = $name[2];
+                }
+                if(isset($name[3])) {
+                    $llname = $name[3];
+                }
                 $users->name = isset($name[0]) ? $name[0] : '';
-                $users->lname = isset($name[1]) ? $name[1] : '';
+                $users->lname = $mname.' '.$lname. ' '.$llname;
                 $users->city = $request->customer_city;
                 $users->phone_number = $request->phone_number;
                 $users->user_type = '3';
@@ -878,7 +907,7 @@ www.headway.guru
                 'user_id' => $request->input('user_id'),
                 'event_id' => $request->input('event_id'),
                 'customer_id' => ($request->customer_id != '0') ? $request->customer_id : $last_insert_id,
-                'coupon_number' => $request->input('coupon_number'),
+                'coupon_number' => ltrim($request->input('coupon_number'), '0'),
                 'created_at' => date('Y-m-d H:i:s')
             ];
             $coupons_check_assigned = (array)$data_insert['coupon_number'];
@@ -900,7 +929,7 @@ www.headway.guru
                         'event_id' => $request->input('event_id'),
                         'user_id' => $request->input('user_id'),
                         'customer_id' => ($request->customer_id != '0') ? $request->customer_id : $last_insert_id,
-                        'coupon_number' => $j,
+                        'coupon_number' =>  ltrim($j, '0'),
                         'created_at' => date('Y-m-d H:i:s')
                     ];
                 }
@@ -915,7 +944,7 @@ www.headway.guru
                     'user_id' => $request->input('user_id'),
                     'event_id' => $request->input('event_id'),
                     'customer_id' => ($request->customer_id != '0') ? $request->customer_id : $last_insert_id,
-                    'coupon_number' => $value,
+                    'coupon_number' => ltrim($value,'0'),
                     'created_at' => date('Y-m-d H:i:s')
                 ];
             }
@@ -927,7 +956,7 @@ www.headway.guru
             ->where('seller_coupons.user_id', '=', $user_id)
             ->where('seller_coupons.event_id', '=', $event_id)
             ->whereIn('seller_coupons.coupon_number', $coupons_check_assigned)
-            ->where('seller_coupons.is_assign', '=', '1')->count();
+            ->where('seller_coupons.is_assign', '=', '1')->where('seller_coupons.status', '=', '1')->count();
 
         if ($check_coupons > 0) {
             $result['status'] = false;
@@ -940,6 +969,7 @@ www.headway.guru
          DB::table('seller_coupons')
             ->where("seller_coupons.user_id", "=", $user_id)
             ->where("seller_coupons.event_id", "=", $event_id)
+            ->where("seller_coupons.status", "=", '1')
             ->whereIn('coupon_number', $coupons_check_assigned)
             ->update(["seller_coupons.is_assign" => 1,'seller_coupons.updated_at' => date('Y-m-d H:i:s')]);
 
@@ -979,6 +1009,7 @@ www.headway.guru
             ->select(DB::raw('COUNT(seller_coupons.coupon_number) as quantity'))
             ->where('seller_coupons.user_id', '=', $user_id)
             ->where('seller_coupons.event_id', '=', $event_id)
+            ->where('seller_coupons.status', '=', '1')
             ->groupBy('seller_coupons.event_id')
             ->groupBy('seller_coupons.user_id')
             ->get();
@@ -988,6 +1019,7 @@ www.headway.guru
             ->select(DB::raw('COUNT(seller_coupons.coupon_number) as quantity'))
             ->where('seller_coupons.user_id', '=', $user_id)
             ->where('seller_coupons.event_id', '=', $event_id)
+            ->where('seller_coupons.status', '=', '1')
             ->where('seller_coupons.is_assign', '=', '1')
             ->groupBy('seller_coupons.event_id')
             ->groupBy('seller_coupons.user_id')
@@ -1015,6 +1047,7 @@ www.headway.guru
         $current_event_banner_image = isset($events[0]->event_name) ? $events[0]->image : '';
         $slabArr = Slab::select('slabs.id', 'slabs.min_coupons', 'slabs.max_coupons', 'slabs.prize', 'slabs.event_id', 'slabs.status','events.event_name')->leftJoin('events', 'events.id', '=', 'slabs.event_id')->where('slabs.status', 1)->get();
         $cmsData = Cms::all()->where('status', 1);
+        $meetingData = Meeting::first();
 
         $socialData = Social::all()->where('status', 1);
         $noticeData = Notice::all()->where('status', 1);
@@ -1050,6 +1083,9 @@ www.headway.guru
             'generalData' => (object)$generalData,
             'recent_event' => (object)isset($Oldevents) ? $Oldevents : array(),
             'bannerList' => $banner,
+            'zoom_meeting_title' => $meetingData['meeting_title'],
+            'zoom_meeting_link' => ($meetingData['link']) ? $meetingData['link'] : '',
+            'is_zoom_meeting_today' => (string)$meetingData['is_today']
         );
 
         return response()->json(['status' => true, 'message' => 'Get Dashboard data successfully', 'data' => $all_data], 200);
@@ -1118,7 +1154,7 @@ www.headway.guru
     {
         $validator = Validator::make($request->all(), [
             'quantity' => 'required|numeric',
-            'receipt_payment' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'receipt_payment' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
             'user_id' => 'required',
             'event_id' => 'required',
         ]);
@@ -1313,6 +1349,7 @@ www.headway.guru
         $token = $request->header('token');
         $base_url = $this->base_url;
         $checkToken = $this->tokenVerify($token);
+        $search = $request->search;
         // Decode the JSON response
         $userData = json_decode($checkToken->getContent(), true);
         if ($userData['status'] == false) {
@@ -1325,9 +1362,16 @@ www.headway.guru
 
         $customerData = DB::table('assign_customer_coupons')
            ->leftJoin('users AS users', 'users.id', '=', 'assign_customer_coupons.user_id')
-          ->select('assign_customer_coupons.id','assign_customer_coupons.customer_id', 'assign_customer_coupons.coupon_number', DB::raw("DATE_FORMAT(assign_customer_coupons.created_at, '%Y-%m-%d') AS date"), DB::raw("CONCAT(users.name, ' ', users.lname) AS seller_name"),'users.storename')
+          ->select('assign_customer_coupons.id','assign_customer_coupons.customer_id', 'assign_customer_coupons.coupon_number', DB::raw("DATE_FORMAT(assign_customer_coupons.created_at, '%Y-%m-%d') AS date"), DB::raw("users.storename AS seller_name"),'users.storename')
             ->where('assign_customer_coupons.customer_id', '=', $customer_id)
             ->where('assign_customer_coupons.event_id', '=', $event_id)
+            ->where(function($query) use ($search) {
+                if($search) {
+                    $query->where(DB::raw("CONCAT(users.name, ' ', users.lname)"), 'LIKE', "%{$search}%")
+                    ->orWhere('users.phone_number', 'LIKE', "%{$search}%")
+                    ->orWhere('assign_customer_coupons.coupon_number', 'LIKE', "%{$search}%");
+                }
+             })
             ->orderBy('assign_customer_coupons.created_at', 'desc')
             ->paginate($this->per_page_show, ['*'], 'page', $page_number);
 
@@ -1521,6 +1565,7 @@ www.headway.guru
         ->select('id', 'user_id', 'event_id', 'title', 'amount', 'detail', DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->bill_path . "', file),'') AS file"), DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->bill_path . "', receipt),'') AS receipt"), DB::raw("CASE WHEN bill_status = '0' THEN 'Pending' WHEN bill_status = '1' THEN 'Approved' WHEN bill_status = '2' THEN 'Declined' WHEN bill_status = '3' THEN 'Completed' ELSE '' END bill_status"), DB::raw("DATE_FORMAT(created_at, '%d %M %Y %h:%i %p') AS date"),'reasons')
             ->where('user_id', '=', $user_id)
             ->where('event_id', '=', $event_id)
+            ->orderBy('id','DESC')
             ->paginate($this->per_page_show, ['*'], 'page', $page_number);
 
         $pagination = [
@@ -1547,7 +1592,7 @@ www.headway.guru
             'title' => 'required',
             'amount' => 'required',
             'detail' => 'required',
-            'file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'file' => 'required|mimes:jpeg,png,jpg,gif,webp,pdf|max:2048',
             'user_id' => 'required',
             'event_id' => 'required',
         ]);
@@ -1688,7 +1733,7 @@ www.headway.guru
         }
 
         $rewardsList = Reward::where('rewards.status', '=', 1)
-        ->select('rewards.id', 'rewards.user_id', 'rewards.event_id', 'rewards.points', DB::raw("CONCAT(users2.name, ' ', users2.lname) AS seller_name"), DB::raw("CASE WHEN rewards.transaction_type = 1 THEN 'Credited' WHEN rewards.transaction_type = 2 THEN 'Debited' ELSE '' END transaction_type"), DB::raw("DATE_FORMAT(rewards.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("rewards.detail AS details"))
+        ->select('rewards.id', 'rewards.user_id', 'rewards.event_id', 'rewards.points', DB::raw("CONCAT(users2.name, ' ', users2.lname) AS seller_names"), DB::raw("CASE WHEN rewards.transaction_type = 1 THEN 'Credited' WHEN rewards.transaction_type = 2 THEN 'Debited' ELSE '' END transaction_type"), DB::raw("DATE_FORMAT(rewards.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("rewards.detail AS details"), DB::raw("users2.storename AS seller_name"))
         ->addSelect(DB::raw("(SELECT SUM(points) FROM rewards WHERE user_id = '$user_id' AND event_id = '$event_id' AND transaction_type = 1 GROUP BY user_id, event_id) as totalPoints"))
         ->addSelect(DB::raw("((SELECT SUM(points) FROM rewards WHERE user_id = '$user_id' AND event_id = '$event_id' AND transaction_type = 1 GROUP BY user_id, event_id) - (SELECT SUM(points) FROM rewards WHERE user_id = '$user_id' AND event_id = '$event_id' AND transaction_type = 2 GROUP BY user_id, event_id)) as leftPoints"), DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->profile_path . "', avatar),'') AS avatar"))
         ->leftJoin('users AS users2', 'users2.id', '=', 'rewards.user_id')
@@ -1699,14 +1744,17 @@ www.headway.guru
         ->paginate($this->per_page_show, ['*'], 'page', $page_number);
 
         $rewardsHistory = Reward::where('rewards.status', '=', 1)
-        ->select('rewards.id', 'rewards.user_id', 'rewards.event_id', 'rewards.points', DB::raw("CONCAT(users2.name, ' ', users2.lname) AS seller_name"), DB::raw("CASE WHEN rewards.transaction_type = 1 THEN 'Credited' WHEN rewards.transaction_type = 2 THEN 'Debited' ELSE '' END transaction_type"), DB::raw("DATE_FORMAT(rewards.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("rewards.detail AS details"), DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->profile_path . "', avatar),'') AS avatar"), DB::raw("0 AS totalPoints"), DB::raw("0 AS leftPoints"))
+        ->select('rewards.id', 'rewards.user_id', 'rewards.event_id', 'rewards.points', DB::raw("CONCAT(users2.name, ' ', users2.lname) AS seller_names"), DB::raw("CASE WHEN rewards.transaction_type = 1 THEN 'Credited' WHEN rewards.transaction_type = 2 THEN 'Debited' ELSE '' END transaction_type"), DB::raw("DATE_FORMAT(rewards.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("rewards.detail AS details"), DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->profile_path . "', avatar),'') AS avatar"), DB::raw("0 AS totalPoints"), DB::raw("0 AS leftPoints"), DB::raw("users2.storename AS seller_name"))
         ->leftJoin('users AS users2', 'users2.id', '=', 'rewards.user_id')
         ->leftJoin('events', 'events.id', '=', 'rewards.event_id')
         ->where('rewards.user_id', '=', $user_id)
         ->where('rewards.event_id', '=', $event_id)
         ->paginate($this->per_page_show, ['*'], 'page', $page_number);
+        if($rewardsList) {
+            $leftPoints =  ($rewardsList[0]->leftPoints)??$rewardsList[0]->totalPoints;
+        }
        
-        $rewardData = ['total_points' => isset($rewardsList[0]) ? $rewardsList[0]->totalPoints : 0, 'left_points' =>  isset($rewardsList[0]) ? $rewardsList[0]->leftPoints : 0];
+        $rewardData = ['total_points' => isset($rewardsList[0]) ? $rewardsList[0]->totalPoints : 0, 'left_points' =>  isset($rewardsList[0]) ? $leftPoints : 0];
         $finalData = $rewardsList->merge($rewardsHistory); 
         // dd($finalData);
         $pagination = [
@@ -1770,7 +1818,7 @@ www.headway.guru
         $chat->save();
         $last_insert_id = $chat->id;
 
-        $chatData = Chatmessage::select('chatmessages.id', 'chatmessages.user_id', 'chatmessages.receiver_id', 'chatmessages.sender_id', 'chatmessages.message AS message', DB::raw("DATE_FORMAT(chatmessages.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("UNIX_TIMESTAMP(chatmessages.created_at) AS time"),'chatmessages.chat_id','users2.storename AS receiver_storename','users.storename AS sender_storename')
+        $chatData = Chatmessage::select('chatmessages.id', 'chatmessages.user_id', 'chatmessages.receiver_id', 'chatmessages.sender_id', 'chatmessages.message AS message', DB::raw("DATE_FORMAT(chatmessages.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("UNIX_TIMESTAMP(chatmessages.created_at) AS time"),'chatmessages.chat_id','users2.storename AS receiver_storename','users.storename AS sender_storename', DB::raw("'new_message' AS type"))
         ->leftJoin('users AS users2', 'users2.id', '=', 'chatmessages.receiver_id')
         ->leftJoin('users AS users', 'users.id', '=', 'chatmessages.sender_id')
         ->where('chatmessages.id', $last_insert_id)->first();
@@ -2005,6 +2053,7 @@ www.headway.guru
         ->select('id', 'user_id', 'event_id', 'title', 'detail', DB::raw("CASE WHEN order_status = '0' THEN 'Pending' WHEN order_status = '1' THEN 'Approved' WHEN order_status = '2' THEN 'Declined' ELSE '' END order_status"), DB::raw("DATE_FORMAT(created_at, '%d %M %Y %h:%i %p') AS date"),"quantity",'reasons')
             ->where('user_id', '=', $user_id)
             ->where('event_id', '=', $event_id)
+            ->orderBy('id','DESC')
             ->paginate($this->per_page_show, ['*'], 'page', $page_number);
 
         $pagination = [
@@ -2061,6 +2110,151 @@ www.headway.guru
         $bill->save();
 
         return response()->json(['status' => true, 'message' => 'Asset Added successfully', 'data' => []], 200);
+    }
+
+     /**
+     * graphics add form Data.
+     */
+    public function addGraphics(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required',
+            'detail' => 'required',
+            'file' => 'required|max:10048',
+            'user_id' => 'required',
+            'event_id' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            $result['status'] = false;
+            $result['message'] = $validator->errors()->first();
+            $result['data'] = (object) [];
+            return response()->json($result, 200);
+        }
+
+        $user_id = $request->user_id;
+        $token = $request->header('token');
+        $base_url = $this->base_url;
+        $checkToken = $this->tokenVerify($token);
+        // Decode the JSON response
+        $userData = json_decode($checkToken->getContent(), true);
+        if ($userData['status'] == false) {
+            return $checkToken->getContent();
+        }
+        $graphic = new Graphic;
+        $graphic->title = $request->title;
+        $graphic->detail = $request->detail;
+        $graphic->user_id = $request->user_id;
+        $graphic->event_id = $request->event_id;
+        
+        if ($image = $request->file('file')) {
+            $destinationPath = 'public/graphics/';
+            $graphicFile = date('YmdHis') . "." . $image->getClientOriginalExtension();
+            $image->move($destinationPath, $graphicFile);
+            $graphic->file = "$graphicFile";
+        }
+        $graphic->save();
+
+        return response()->json(['status' => true, 'message' => 'Graphic Added successfully', 'data' => []], 200);
+    }
+
+    /**
+     * graphics list data.
+     */
+    public function graphicsList(Request $request)
+    {
+        $user_id = $request->user_id;
+        $event_id = $request->event_id;
+        $token = $request->header('token');
+        $page_number = $request->page;
+        $base_url = $this->base_url;
+        $checkToken = $this->tokenVerify($token);
+        // Decode the JSON response
+        $userData = json_decode($checkToken->getContent(), true);
+        if ($userData['status'] == false) {
+            return $checkToken->getContent();
+        }
+
+        // Define validation rules
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
+            'event_id' => 'required',
+        ]);
+
+        // Check if the validation fails
+        if ($validator->fails()) {
+            $result['status'] = false;
+            $result['message'] = $validator->errors()->first();
+            $result['data'] = (object) [];
+            return response()->json($result, 200);
+        }
+
+        $graphicsList = Graphic::where('status', '=', 1)
+        ->select('id', 'user_id', 'event_id', 'title', 'detail', DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->graphic_path . "', file),'') AS file"), DB::raw("CASE WHEN graphic_status = '0' THEN 'Pending' WHEN graphic_status = '1' THEN 'Approved' WHEN graphic_status = '2' THEN 'Declined' WHEN graphic_status = '3' THEN 'Completed' ELSE '' END graphic_status"), DB::raw("DATE_FORMAT(created_at, '%d %M %Y %h:%i %p') AS date"),'reasons')
+            ->where('user_id', '=', $user_id)
+            ->where('event_id', '=', $event_id)
+            ->orderBy('id','DESC')
+            ->paginate($this->per_page_show, ['*'], 'page', $page_number);
+
+        $pagination = [
+            'total' => $graphicsList->total(),
+            'count' => $graphicsList->count(),
+            'per_page' => $graphicsList->perPage(),
+            'current_page' => $graphicsList->currentPage(),
+            'total_pages' => $graphicsList->lastPage(),
+        ];
+        $graphicListData = [
+            'pagination' => $pagination,
+            'data' => $graphicsList,
+        ];
+
+        return response()->json(['status' => true, 'message' => 'Get Graphics list successfully', 'data' => $graphicListData], 200);
+    }
+
+    /**
+     * graphics list data.
+     */
+    public function reportCouponDownload(Request $request)
+    {
+        $user_id = $request->user_id;
+        $event_id = $request->event_id;
+        $token = $request->header('token');
+        $page_number = $request->page;
+        $base_url = $this->base_url;
+        $checkToken = $this->tokenVerify($token);
+        // Decode the JSON response
+        $userData = json_decode($checkToken->getContent(), true);
+        if ($userData['status'] == false) {
+            return $checkToken->getContent();
+        }
+
+        // Define validation rules
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
+            'event_id' => 'required',
+        ]);
+
+        // Check if the validation fails
+        if ($validator->fails()) {
+            $result['status'] = false;
+            $result['message'] = $validator->errors()->first();
+            $result['data'] = (object) [];
+            return response()->json($result, 200);
+        }
+
+        $fileName = 'customer_coupons_'.time().'.xlsx';
+        $export = new CouponsExport($user_id, $event_id);
+
+        // Use Storage to store the file temporarily
+        Excel::store($export, $fileName, 'public');  // Store in the 'public' disk
+
+        // Generate the download link for the stored file
+        $fileUrl = $base_url.Storage::url($fileName);  // Get the URL for the stored file
+
+
+        // return Excel::download(new CouponsExport($user_id, $event_id), $fileName);
+
+        return response()->json(['status' => true, 'message' => 'Report Download Successfully', 'data' => $fileUrl], 200);
     }
 
 }

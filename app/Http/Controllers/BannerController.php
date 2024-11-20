@@ -9,6 +9,10 @@ use Yajra\DataTables\Datatables;
 
 class BannerController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('role:Administrator');
+    }
     /**
      * Display a listing of the resource.
      */
@@ -45,7 +49,7 @@ class BannerController extends Controller
     {
         $request->validate([
             'banner_name' => 'required',
-            'banner_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5042',
+            'banner_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5042',
         ]);
         $input = $request->all();
         if ($image = $request->file('banner_image')) {

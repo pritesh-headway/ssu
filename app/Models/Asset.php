@@ -9,5 +9,5 @@ class Asset extends Model
 {
     use HasFactory;
     public $table = "asset_orders";
-    protected $fillable = ['amount', 'order_status'];
+    protected $fillable = ['user_id','event_id','title','detail','quantity','amount', 'order_status'];
 }

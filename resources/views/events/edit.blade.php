@@ -54,7 +54,7 @@
             </div>
             <br />
             <div class="form-group">
-                <label for="sel1">Select Image Type:</label>
+                <label for="sel1">Select Device Type:</label>
                 <select class="form-control" id="image_type" name="image_type">
                     <option value="3" <?php echo ($event->image_type == 3) ? 'selected' : '' ?>>Both</option>
                     <option value="1" <?php echo ($event->image_type == 1) ? 'selected' : '' ?>>Desktop</option>

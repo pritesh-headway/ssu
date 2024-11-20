@@ -12,6 +12,10 @@ use Illuminate\Support\Facades\DB;
 
 class DocumentController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('role:Administrator,Accountant');
+    }
     /**
      * Display a listing of the resource.
      */

@@ -1,7 +1,7 @@
 @extends('layouts.master')
 @section('content')
 <div class="animate__animated p-6" :class="[$store.app.animation]">
-    {{-- <a style="float: right;" href="{{ route('customer.create')}}" class="btn btn-primary">Add Customer</a> --}}
+
     <div class="container mt-5">
         @if ($message = Session::get('success'))
         <div class="alert alert-success">
@@ -17,10 +17,10 @@
                     <th>Event Year</th>
                     <th>No. of Coupons</th>
                     <th>Enquiry Date</th>
-                    <th>Payment Verification</th>
+                    <th class="noExport">Payment Verification</th>
                     <th>Order Status</th>
                     <th>Reasons</th>
-                    <th width="105px">Action</th>
+                    <th class="noExport" width="105px">Action</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -48,23 +48,31 @@
         </div>
     </div>
 </div>
+<link rel="stylesheet" href="{{ URL::to('assets/css/buttons.dataTables.min.css') }}">
 <link href="{{ URL::to('assets/css/bootstrap.min.css') }}" rel="stylesheet">
 <script src="{{ URL::to('assets/js/jquery-3.js') }}"></script>
 <link href="{{ URL::to('assets/css/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
 <script src="{{ URL::to('assets/js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ URL::to('assets/js/dataTables.buttons.min.js') }}"></script>
+<script src="{{ URL::to('assets/js/jszip.min.js') }}"></script>
+<script src="{{ URL::to('assets/js/buttons.html5.min.js') }}"></script>
+<script src="{{ URL::to('assets/js/buttons.print.min.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
 </script>
 <script src="{{ URL::to('assets/js/dataTables.bootstrap5.min.js') }}"></script>
+
 <script type="text/javascript">
     $(function() {
         gb_DataTable = $("#myTable").DataTable({
             autoWidth: false,
-            order: [4, "DESC"],
+            order: [0, "DESC"],
             processing: true,
             serverSide: true,
+            responsive: true,
             searchDelay: 2000,
             paging: true,
+            pageLength: 25,
             ajax: "{{ route('order.index') }}",
             iDisplayLength: "25",
             columns: [{
@@ -123,6 +131,19 @@
                     orderable: false,
                     searchable: false
                 },
+            ],
+            dom: 'Blfrtip',
+            buttons: [
+                {
+                    extend: 'excel',
+                    className:'btn btn-success btn-sm',
+                    text: 'Export to Excel',
+                    filename: 'SSU_Coupons_Orders_Data', // Custom file name for Excel
+                    title: 'Orders Coupons Orders List',
+                    exportOptions: {
+                       columns: ':not(.noExport)'
+                    }
+                }
             ],
             lengthMenu: [25, 50, 100]
         });

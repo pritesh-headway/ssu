@@ -106,7 +106,7 @@
             <br />
             <div class="form-group">
                 <input type="file" accept="image/*" name="profile_image" class="form-control-file border">
-                @error('file')
+                @error('profile_image')
                 <span class="text-danger">{{ $message }}</span>
                 @enderror
             </div>

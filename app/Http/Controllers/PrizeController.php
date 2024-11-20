@@ -10,6 +10,10 @@ use Yajra\DataTables\Datatables;
 
 class PrizeController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('role:Administrator');
+    }
     /**
      * Display a listing of the resource.
      */
@@ -49,9 +53,9 @@ class PrizeController extends Controller
         $request->validate([
             'event_id' => 'required|not_in:null',
             'prize_name' => 'required',
-            'prize_qty' => 'required|numeric',
-            'prize_amount' => 'required|numeric',
-            'prize_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5042',
+            'prize_qty' => 'required',
+            // 'prize_amount' => 'required|numeric',
+            'prize_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5042',
         ], [
             'event_id' => 'The event name is required'
         ]);
@@ -95,8 +99,8 @@ class PrizeController extends Controller
          $request->validate([
             'event_id' => 'required|not_in:null',
             'prize_name' => 'required',
-            'prize_qty' => 'required|numeric',
-            'prize_amount' => 'required|numeric',
+            'prize_qty' => 'required',
+            // 'prize_amount' => 'required|numeric',
         ], [
             'event_id' => 'The event name is required'
         ]);
