@@ -8,6 +8,7 @@
             <p>{{ $message }}</p>
         </div>
         @endif
+        <button id="unassignCoupons" class="btn btn-danger btn-sm">Unassign Selected Coupons</button>
         {{-- <a class="btn btn-primary" id="changeLabel" onclick="show('Show Graph Report')">Show Graph Report</a> --}}
         <table id="myTable" class="table table-bordered data-table">
             <thead>
@@ -92,7 +93,12 @@
             iDisplayLength: "10000",
             columns: [{
                     data: 'DT_RowIndex',
-                    name: 'id'
+                    name: 'id',
+                    render: function(data, type, row) {
+                    return '<input type="checkbox" class="select-row" value="' + row.id + '">';
+                    },
+                    orderable: false,
+                    searchable: false
                 },
                 {
                     data: 'storename',
@@ -142,10 +148,44 @@
                 },
                 success: function(response) {
                     $('#myTable').DataTable().ajax.reload();
-                    alert(response.success);
                 }
             });
         }
     }
+
+    $(document).on('click', '#unassignCoupons', function() {
+        let selectedIds = [];
+        $('.select-row:checked').each(function() {
+            selectedIds.push($(this).val());
+        });
+        
+        if (selectedIds.length === 0) {
+            alert('Please select at least one row to unassign.');
+            return;
+        }
+        
+        // Confirm action
+        if (!confirm('Are you sure you want to unassign the selected coupons?')) {
+            return;
+        }
+    
+        // AJAX request to unassign coupons
+        $.ajax({
+            url: "{{ route('customercoupon.unassign') }}", // Add your unassign route here
+            method: 'POST',
+            data: {
+                ids: selectedIds,
+                _token: "{{ csrf_token() }}" // Laravel CSRF token for security
+            },
+            success: function(response) {
+                // gb_DataTable.ajax.reload(); // Reload DataTable
+                alert('Selected coupons have been unassigned successfully!');
+                $('#myTable').DataTable().ajax.reload();
+            },
+            error: function(xhr) {
+                alert('An error occurred while unassigning coupons.');
+            }
+        });
+    });
 </script>
 @endsection

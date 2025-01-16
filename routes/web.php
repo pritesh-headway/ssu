@@ -1,6 +1,7 @@
 <?php
 
 // use App\Http\Controllers\API\BannerController;
+use App\Http\Controllers\WinnerController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\EventController;
@@ -29,13 +30,19 @@ use App\Http\Controllers\TestingController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\SellerPointsController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 // use Symfony\Component\HttpFoundation\Request;
 use Illuminate\Http\Request;
 use App\Imports\UsersImport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\UsersCouponsExport;
+use App\Models\Prize;
+use App\Models\Winner;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -60,22 +67,134 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
+Route::match(
+    ['get', 'post'],
+    'fashion-show',
+    function (Request $request) {
+        $user_id = $request->user_id;
+        $users = DB::table('users')
+            ->select('users.storename', 'users.city', 'users.phone_number', 'users.avatar')
+            ->where('users.id', $user_id)
+            ->first();
+        // dd($users);
+        return view('rampwalk-store', ['data' => $users]);
+    }
+);
 
 Route::match(['get', 'post'], 'winner-number', function (Request $request) {
-    $number = $request->number; 
-    $users = DB::table('assign_customer_coupons')
-    ->select('assign_customer_coupons.customer_id', DB::raw("CONCAT(users.name, ' ', users.lname) AS customer_name"), 'users.city', 'users.phone_number')
-            ->leftJoin('users', 'users.id', '=', 'assign_customer_coupons.customer_id')
-            ->where('coupon_number', $number)->first();
+    $number = $request->number;
+    $event = $request->event;
+    $day = $request->day;
+    $prize = $request->prize;
+    if ($request->number) {
+        $validator = Validator::make($request->all(), [
+            'number' => ['required', 'integer', 'min:10000'],
+        ]);
+    }
 
-    return view('winner-form', ['data' => $users]);
+
+    if ($day == 1) {
+        $numberCountDigit = strlen($request->number);
+
+        $users = DB::table('assign_customer_coupons')
+            ->select('assign_customer_coupons.customer_id', 'assign_customer_coupons.user_id', 'assign_customer_coupons.coupon_number', DB::raw("CONCAT(users.name, ' ', users.lname) AS customer_name"), 'jw.storename', 'users.city', 'users.phone_number')
+            ->leftJoin('users', 'users.id', '=', 'assign_customer_coupons.customer_id')
+            ->leftJoin('users AS jw', 'jw.id', '=', 'assign_customer_coupons.user_id')
+            ->where(DB::raw('RIGHT(coupon_number, ' . $numberCountDigit . ')'), $number)
+            ->where('assign_customer_coupons.is_winner', 0)
+            ->get();
+        foreach ($users as $key => $value) {
+            $checkCoupn = Winner::where('coupon_number', $value->coupon_number)->count();
+            if ($checkCoupn == 0) {
+
+                Winner::create([
+                    'user_id' => $value->user_id,
+                    'customer_id' => $value->customer_id,
+                    'prize_id' => $prize,
+                    'coupon_number' => $value->coupon_number,
+                    'event_id' => $event,
+                ]);
+
+                DB::table('assign_customer_coupons')
+                    ->where(
+                        'coupon_number',
+                        $value->coupon_number
+                    )->update([
+                        'is_winner' => '1',
+                    ]);
+            }
+        }
+        $prize = Prize::find($prize);
+
+        // Excel::download(new UsersCouponsExport($numberCountDigit, $number, $prize->prize_name), $prize->prize_name . ' winner lists.xlsx');
+        return view('winner-form-firstday', ['data' => $users, 'prize' => $prize->prize_name, 'image' => '', 'numberCountDigit' => $numberCountDigit, 'number' => $request->number]);
+    } else {
+        $users = DB::table('assign_customer_coupons')
+            ->select('assign_customer_coupons.customer_id', 'assign_customer_coupons.user_id', 'assign_customer_coupons.coupon_number', DB::raw("CONCAT(users.name, ' ', users.lname) AS customer_name"), 'jw.storename', 'users.city', 'users.phone_number')
+            ->leftJoin('users', 'users.id', '=', 'assign_customer_coupons.customer_id')
+            ->leftJoin('users AS jw', 'jw.id', '=', 'assign_customer_coupons.user_id')
+            ->where('coupon_number', $number)
+            ->where('assign_customer_coupons.is_winner', 0)
+            ->get();
+
+        foreach ($users as $key => $value) {
+            $checkCoupn = Winner::where('coupon_number', $value->coupon_number)->count();
+            if ($checkCoupn == 0) {
+                Winner::create([
+                    'user_id' => $value->user_id,
+                    'customer_id' => $value->customer_id,
+                    'prize_id' => $prize,
+                    'coupon_number' => $value->coupon_number,
+                    'event_id' => $event,
+                ]);
+
+                DB::table('assign_customer_coupons')
+                    ->where(
+                        'coupon_number',
+                        $value->coupon_number
+                    )
+                    ->update([
+                        'is_winner' => '1',
+                    ]);
+            }
+        }
+
+        $prize = Prize::find($prize);
+        $prize_name = isset($prize->prize_name) ? $prize->prize_name : '';
+        $image = isset($prize->image) ? $prize->image : '';
+        $image = 'public/prize_images/' . $image;
+        return view('winner-form', ['data' => $users, 'prize' => $prize_name, 'image' => $image]);
+    }
+});
+
+Route::get('/download-winner-list', function (Request $request) {
+    $numberCountDigit = $request->numberCountDigit;
+    $number = $request->number;
+    $prizeName = $request->prizeName;
+
+    return Excel::download(
+        new UsersCouponsExport($numberCountDigit, $number, $prizeName),
+        $prizeName . ' winner lists.xlsx'
+    );
 });
 
 Route::group(['middleware' => 'auth'], function () {
-    // Route::get('home', function () {
+    // Route::get('/home', function () {
     //     return view('home');
     // });
-    Route::get('home', [HomeController::class, 'index'])->name('home.index');
+    // Route::get('/home', function () {
+    //     return 'Hello, world!';
+    // });
+    // Route::get('/home', [HomeController::class, 'index']);
+    // Route::get('/home', [HomeController::class, 'index'])->name('home.index');
+    // Route::get('/home', 'HomeController::class')->name('home.index');
+    // Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/home', [
+        HomeController::class,
+        'index'
+    ])->name('home.index');
+
+
     Route::get('/zoom-meeting', [HomeController::class, 'zoomMeeting'])->name('home.zoomMeeting');
     Route::put('/home/update/{id}', [HomeController::class, 'update'])->name('home.update');
 
@@ -105,8 +224,16 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('reports', ReportsController::class);
     Route::resource('reportssellercustomer', ReportsSellerCustomerController::class);
     Route::resource('reportscoupons', ReportsCouponsController::class);
+    Route::resource('winner', WinnerController::class);
+    Route::get('/sellerpoints', [
+
+        SellerPointsController::class,
+        'index'
+    ])->name('sellerpoints.index');
     Route::resource('testing', TestingController::class);
     Route::delete('reportssellercustomer/{param1}/{param2}', [ReportsSellerCustomerController::class, 'destroy']);
+    // Route::delete('seller.list/{id}', [SellerController::class, 'destroy']);
+    Route::delete('seller/{id}', [SellerController::class, 'destroy'])->name('seller.destroy');
 
     Route::get('graphic', [GraphicController::class, 'index'])->name('graphic.index');
     Route::get('broadcast', [BroadcastController::class, 'index'])->name('broadcast.index');
@@ -117,13 +244,17 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('cms', [CmsController::class, 'index'])->name('cms.index');
     Route::get('prize', [PrizeController::class, 'index'])->name('prize.index');
     Route::get('contactus', [ContactusController::class, 'index'])->name('contactus.index');
-    Route::get('document', [DocumentController::class, 'index'])->name('document.index');
+    //Route::get('document', [DocumentController::class, 'index'])->name('document.index');
+    Route::get('/document', [
+        DocumentController::class,
+        'index'
+    ])->name('document.index');
     Route::get('bill', [BillController::class, 'index'])->name('bill.index');
     Route::get('slab', [SlabController::class, 'index'])->name('slab.index');
     Route::get('customercoupon', [CustomercouponController::class, 'index'])->name('customercoupon.index');
     Route::get('order', [OrderController::class, 'index'])->name('order.index');
     Route::get('customer', [CustomerController::class, 'index'])->name('customer.index');
-    Route::get('seller', [SellerController::class, 'index'])->name('seller.index');
+    Route::get('/seller', [SellerController::class, 'index'])->name('seller.index');
     Route::get('coupon', [CouponController::class, 'index'])->name('coupon.index');
     Route::get('event', [EventController::class, 'index'])->name('event.index');
     Route::get('banner', [BannerController::class, 'index'])->name('banner.index');
@@ -133,14 +264,18 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('import-users', [SellerController::class, 'importUsers']);
     Route::post('import-coupons', [CustomercouponController::class, 'importCoupons']);
     Route::get('/slots/{id}', [OrderController::class, 'slots']);
+    Route::put('/order/slotUpdateStatus/{id}/{qty}', [OrderController::class, 'slotUpdateStatus'])->name('order.slotUpdateStatus');
     Route::put('/updateslot/{id}', [OrderController::class, 'updateslot']);
 
     Route::match(['get', 'post'], '/addBill', [BillController::class, 'addBill'])->name('addBill');
     Route::post('bill/insertData', [BillController::class, 'insertData']);
-    
+
     Route::match(['get', 'post'], '/addAsset', [AssetController::class, 'addAsset'])->name('addAsset');
     Route::post('asset/insertData', [AssetController::class, 'insertData']);
     Route::get('/asset/points/{id}/{idd}', [AssetController::class, 'getPoints'])->name('asset.getPoints');
+
+    Route::post('unassign', [ReportsSellerCustomerController::class, 'unassignCoupons'])->name('customercoupon.unassign');
+
 
     // Route::get('bill/savekeywordDetails', [BillController::class, 'bill/savekeywordDetails']);
     // Route::post('reports/sellerCustomerCoupons', [ReportsController::class, 'sellerCustomerCoupons'])->name('reports.sellerCustomerCoupons');
@@ -164,7 +299,6 @@ Route::group(['namespace' => 'App\Http\Controllers\Auth'], function () {
 });
 
 Route::group(['namespace' => 'App\Http\Controllers'], function () {
-    // ---------------------- main dashboard ---------------------//
     Route::controller(HomeController::class)->group(function () {
         Route::get('\home', 'index')->middleware('auth')->name('home');
     });

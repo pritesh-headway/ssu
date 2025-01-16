@@ -114,17 +114,19 @@
     function deleteItem(id) {
         if (confirm('Are you sure you want to delete this item?')) {
             $.ajax({
-                url: 'seller/' + id,
+                url: '/seller/' + id,
                 type: 'DELETE',
                 data: {
                     _token: '{{ csrf_token() }}'
                 },
                 success: function(response) {
+                dd();
                     $('#myTable').DataTable().ajax.reload();
                     alert(response.success);
                 }
             });
         }
     }
+
 </script>
 @endsection

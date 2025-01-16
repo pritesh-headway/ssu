@@ -20,11 +20,11 @@ class HomeController extends Controller
      */
     protected $fcmNotificationService;
     public $base_url;
-    
+
     public function __construct(FcmNotificationService $fcmNotificationService)
     {
         $this->fcmNotificationService = $fcmNotificationService;
-        $this->middleware('auth');
+        // $this->middleware('auth');
         $this->base_url = url('/');
     }
 
@@ -37,18 +37,18 @@ class HomeController extends Controller
     {
         $eventList = Event::all()->where('status', 1);
         $orderList = DB::table('coupons_order')
-            ->leftJoin('users', function($join) {
+            ->leftJoin('users', function ($join) {
                 $join->on('coupons_order.user_id', '=', 'users.id')
                     ->where('users.status', '=', '1');
             })
             ->leftJoin('events', 'events.id', '=', 'coupons_order.event_id')
-            ->select('coupons_order.id','coupons_order.user_id','coupons_order.event_id','coupons_order.quantity','coupons_order.receipt_payment','users.storename',DB::raw("CONCAT(users.name, ' ',users.lname) AS seller_name"),DB::raw("CASE WHEN coupons_order.order_status = '0' THEN 'Pending' WHEN coupons_order.order_status = '1' THEN 'Approved' WHEN coupons_order.order_status = '2' THEN 'Declined' WHEN coupons_order.order_status = '3' THEN 'Delivered' ELSE 'Pending' END AS order_status"),'events.event_name', 'events.event_location',DB::raw("DATE_FORMAT(coupons_order.created_at, '%d-%m-%Y') AS order_date"),DB::raw("YEAR(events.start_date) AS event_year"),'coupons_order.reasons','coupons_order.created_at','users.avatar')
+            ->select('coupons_order.id', 'coupons_order.user_id', 'coupons_order.event_id', 'coupons_order.quantity', 'coupons_order.receipt_payment', 'users.storename', DB::raw("CONCAT(users.name, ' ',users.lname) AS seller_name"), DB::raw("CASE WHEN coupons_order.order_status = '0' THEN 'Pending' WHEN coupons_order.order_status = '1' THEN 'Approved' WHEN coupons_order.order_status = '2' THEN 'Declined' WHEN coupons_order.order_status = '3' THEN 'Delivered' ELSE 'Pending' END AS order_status"), 'events.event_name', 'events.event_location', DB::raw("DATE_FORMAT(coupons_order.created_at, '%d-%m-%Y') AS order_date"), DB::raw("YEAR(events.start_date) AS event_year"), 'coupons_order.reasons', 'coupons_order.created_at', 'users.avatar')
             ->orderBy('coupons_order.id', 'desc')
             ->get()->toArray();
-        $todaysCoupons= [];
-        $todaysRemainingCoupons= [];
-        $soldCoupon= [];
-        $pedingCoupon= [];
+        $todaysCoupons = [];
+        $todaysRemainingCoupons = [];
+        $soldCoupon = [];
+        $pedingCoupon = [];
         $declinedCoupon = [];
         foreach ($orderList as $key => $value) {
             if ($value->order_status == 'Delivered') {
@@ -70,7 +70,7 @@ class HomeController extends Controller
                     $todaysRemainingCoupons[] = $value->quantity;
                 }
             }
-        }   
+        }
         $couponsArray = array_column($orderList, 'quantity');
         $totalCoupn = array_sum($couponsArray);
         $enquiryCoupn = count($couponsArray);
@@ -80,30 +80,37 @@ class HomeController extends Controller
         $pedingCoupon = count($pedingCoupon);
         $declinedCouponSum = array_sum($declinedCoupon);
         $declinedCoupon = count($declinedCoupon);
-        
-        
-        $customerCount = User::all()->whereNotIn('id', 1)
-                        ->where('user_type', '3')
-                        ->where('status', '1')->count();
-                        
-        $customerTodayCount = User::all()->whereNotIn('id', 1)
-                            ->where('user_type', '3')
-                            ->where('status', '1')
-                            ->where('created_at', '>', Carbon::now()->startOfDay())
-                            ->count();
-        $sellerCount = User::all()->whereNotIn('id', 1)->where('user_type', '2')->where('status', '1')->count();
 
-        $sellerTodayCount = User::all()->whereNotIn('id', 1)
-                            ->where('user_type', '2')
-                            ->where('status', '1')
-                            ->where('created_at', '>', Carbon::now()->startOfDay())
-                            ->count();
+
+        $customerCount = User::where('id', '!=', 1)
+            ->where('user_type', '3')
+            ->where('status', '1')
+            ->count();
+
+        $customerTodayCount = User::where('id', '!=', 1)
+            ->where('user_type', '3')
+            ->where('status', '1')
+            ->where('created_at', '>', Carbon::now()->startOfDay())
+            ->count();
+
+        $sellerCount = User::where('id', '!=', 1)
+            ->where('user_type', '2')
+            ->where('status', '1')
+            ->count();
+
+        $sellerTodayCount = User::where('id', '!=', 1)
+            ->where('user_type', '2')
+            ->where('status', '1')
+            ->where('created_at', '>', Carbon::now()->startOfDay())
+            ->count();
+
 
         $base_url = $this->base_url;
-        return view('home', compact('eventList','orderList','base_url','totalCoupn','soldCoupon','sellerCount','customerCount','todaysCoupons','todaysRemainingCoupons','customerTodayCount','sellerTodayCount','pedingCoupon','enquiryCoupn','declinedCoupon','declinedCouponSum'));
+        return view('home', compact('eventList', 'orderList', 'base_url', 'totalCoupn', 'soldCoupon', 'sellerCount', 'customerCount', 'todaysCoupons', 'todaysRemainingCoupons', 'customerTodayCount', 'sellerTodayCount', 'pedingCoupon', 'enquiryCoupn', 'declinedCoupon', 'declinedCouponSum'));
     }
 
-    public function zoomMeeting() {
+    public function zoomMeeting()
+    {
         $linkData = Meeting::first();
         // dd($linkData['id']);
         return view('meeting', compact('linkData'));
@@ -117,8 +124,8 @@ class HomeController extends Controller
         $cms->link = $request->link;
         $cms->is_today = $isFlag;
         $cms->save();
-        
-        if($isFlag == 1) {
+
+        if ($isFlag == 1) {
             $sellerData = User::select('users.id')
                 ->where('users.user_type', '=', "2")
                 ->get()->toArray();
@@ -127,20 +134,19 @@ class HomeController extends Controller
                 $sellerIds[] = $ids['id'];
             }
 
-            $newData  = json_encode(array('type'=> 'zoom_meeting'));
-            $body = array('receiver_id' => $sellerIds,'title' => $request->meeting_title ,'message' => 'Weekly Zoom Meeting','type' => 'zoom_meeting', 'data' => $newData, 'sound' => 'meetingSound.wav');
+            $newData  = json_encode(array('type' => 'zoom_meeting'));
+            $body = array('receiver_id' => $sellerIds, 'title' => $request->meeting_title, 'message' => 'Weekly Zoom Meeting', 'type' => 'zoom_meeting', 'data' => $newData, 'sound' => 'meetingSound.wav');
 
             $sendNotification = $this->fcmNotificationService->sendFcmAdminNotification($body);
-            // $notifData = json_decode($sendNotification->getContent(), true);
-            // if (isset($notifData['status']) && $notifData['status'] == true) {
-            //     $sendNotification->getContent();
-            // } else {
-            //     $sendNotification->getContent();
-            // }
+            $notifData = json_decode($sendNotification->getContent(), true);
+            if (isset($notifData['status']) && $notifData['status'] == true) {
+                $sendNotification->getContent();
+            } else {
+                $sendNotification->getContent();
+            }
         }
-        
+
         return redirect()->route('home.zoomMeeting')
             ->with('success', 'Updated successfully');
     }
-
 }

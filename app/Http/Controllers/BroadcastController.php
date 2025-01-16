@@ -25,7 +25,7 @@ class BroadcastController extends Controller
     {
         if ($request->ajax()) {
             DB::enableQueryLog();
-            $data = Chatmessage::where('status', 1)->where('is_admin', 1)->groupBy('message')->get();
+            $data = Chatmessage::where('status', 1)->where('is_admin', 1)->groupBy('message')->orderBy('id', 'DESC')->get();
             $query = DB::getQueryLog();
             return Datatables::of($data)
                 ->addIndexColumn()
@@ -52,7 +52,7 @@ class BroadcastController extends Controller
         ]);
         // $input = $request->all();
         $seller = User::all()->whereNotIn('id', 1)->where('user_type', 2)->where('status', 1);
-        
+
         $user_id = auth()->id();
         foreach ($seller as $key => $value) {
             $receiver_ids[] = $value->id;
@@ -67,13 +67,13 @@ class BroadcastController extends Controller
         }
         Chatmessage::insert($data);
 
-        $chatData = Chatmessage::select('chatmessages.id', 'chatmessages.user_id', 'chatmessages.receiver_id', 'chatmessages.sender_id', 'chatmessages.message AS message', DB::raw("DATE_FORMAT(chatmessages.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("UNIX_TIMESTAMP(chatmessages.created_at) AS time"),'chatmessages.chat_id','users2.storename AS receiver_storename',DB::raw("'SSU' AS sender_storename"),'chatmessages.is_admin', DB::raw("'new_message' AS type"))
-        ->leftJoin('users AS users2', 'users2.id', '=', 'chatmessages.receiver_id')
-        ->leftJoin('users AS users', 'users.id', '=', 'chatmessages.sender_id')
-        ->where('chatmessages.chat_id',1)->where('chatmessages.is_admin',1)->orderBy('chatmessages.id', 'DESC')->first();
+        $chatData = Chatmessage::select('chatmessages.id', 'chatmessages.user_id', 'chatmessages.receiver_id', 'chatmessages.sender_id', 'chatmessages.message AS message', DB::raw("DATE_FORMAT(chatmessages.created_at, '%d %M %Y %h:%i %p') AS date"), DB::raw("UNIX_TIMESTAMP(chatmessages.created_at) AS time"), 'chatmessages.chat_id', 'users2.storename AS receiver_storename', DB::raw("'SSU' AS sender_storename"), 'chatmessages.is_admin', DB::raw("'new_message' AS type"))
+            ->leftJoin('users AS users2', 'users2.id', '=', 'chatmessages.receiver_id')
+            ->leftJoin('users AS users', 'users.id', '=', 'chatmessages.sender_id')
+            ->where('chatmessages.chat_id', 1)->where('chatmessages.is_admin', 1)->orderBy('chatmessages.id', 'DESC')->first();
         // dd($chatData);
         $newData  = json_encode($chatData);
-        $body = array('user_id' => $user_id,'sender_id' => $user_id, 'receiver_id' => $receiver_ids,'title' => 'Admin Broadcast' ,'message' => $request->content, 'data' => $newData, 'content_available' => true);
+        $body = array('user_id' => $user_id, 'sender_id' => $user_id, 'receiver_id' => $receiver_ids, 'title' => 'SSU Broadcast', 'message' => $request->content, 'data' => $newData, 'content_available' => true);
 
         $sendNotification = $this->fcmNotificationService->sendFcmNotification($body);
         // $notifData = json_decode($sendNotification->getContent(), true);

@@ -18,7 +18,7 @@ class ReportsSellerCustomerController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = User::whereNotIn('id', [1])->where('user_type', 2)->where('status', 1)->orderBy('storename','ASC')->get();
+            $data = User::whereNotIn('id', [1])->where('user_type', 2)->where('status', 1)->orderBy('storename', 'ASC')->get();
             return Datatables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
@@ -32,7 +32,7 @@ class ReportsSellerCustomerController extends Controller
         return view('reports.sellersList');
     }
 
-     /**
+    /**
      * Display the specified resource.
      */
     public function show(Request $request, $id)
@@ -48,7 +48,7 @@ class ReportsSellerCustomerController extends Controller
         //     GROUP BY acc.coupon_number 
         //     ORDER BY `S`.`storename` ASC');
 
-         $data = DB::select('SELECT
+        $data = DB::select('SELECT
                                 acc.id,
                                 S.storename,
                                 CONCAT(C.name, " ", C.lname) AS CustomerName,
@@ -61,21 +61,21 @@ class ReportsSellerCustomerController extends Controller
                             JOIN users C ON
                                 C.id = acc.customer_id
                             WHERE
-                                acc.user_id = "'.$user_id.'" 
+                                acc.user_id = "' . $user_id . '" 
                             GROUP BY acc.coupon_number  
                             ORDER BY acc.coupon_number ASC');
- 
+
         if ($request->ajax()) {
             return Datatables::of($data)
                 ->addIndexColumn()
-                 ->addColumn('action', function ($row) {
-                    $actionBtn = '<button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.','.$row->rowId.')">Un-Assign Coupon</button>';
+                ->addColumn('action', function ($row) {
+                    $actionBtn = '<button class="delete btn btn-danger btn-sm" onclick="deleteItem(' . $row->id . ',' . $row->rowId . ')">Un-Assign Coupon</button>';
                     return $actionBtn;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
         }
-        return view('reports.customerCoupons', compact('data','id'));
+        return view('reports.customerCoupons', compact('data', 'id'));
     }
 
     /**
@@ -94,5 +94,25 @@ class ReportsSellerCustomerController extends Controller
         return redirect()->route('seller.index')
             ->with('success', 'Coupons Un-assigned successfully');
     }
- 
+
+    public function unassignCoupons(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return response()->json(['message' => 'No coupons selected.'], 400);
+        }
+
+        $assignCoupnArray = AssignCoupon::whereIn('id', $ids)->pluck('coupon_number')->toArray();
+        AssignCoupon::whereIn('id', $ids)->delete();
+        DB::table('seller_coupons')->whereIn('coupon_number', $assignCoupnArray)->update([
+            'is_assign' => '0'
+        ]);
+        return response()->json(['success' => 'Selected coupons have been unassigned successfully!']);
+        // dd($assignCoupnArray);
+
+        // Perform the unassign operation
+        // Coupon::whereIn('id', $ids)->update(['assigned_to' => null]);
+
+        // return response()->json(['message' => 'Selected coupons have been unassigned successfully.']);
+    }
 }

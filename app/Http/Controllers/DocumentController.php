@@ -22,29 +22,32 @@ class DocumentController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Document::select('documents.id',DB::raw("CONCAT(users.name, ' ', users.lname) AS seller_name"),'documents.doc_name','documents.file')
-            ->leftJoin('users', 'users.id', '=', 'documents.user_id')
-            ->leftJoin('events', 'events.id', '=', 'documents.event_id')->where('documents.status', 1)->get();
+            $data = Document::select('documents.id', DB::raw("CONCAT(users.name, ' ', users.lname) AS seller_name"), 'documents.doc_name', 'documents.file')
+                ->leftJoin('users', 'users.id', '=', 'documents.user_id')
+                ->leftJoin('events', 'events.id', '=', 'documents.event_id')->where('documents.status', 1)->get();
             return Datatables::of($data)
-                ->editColumn('documents.start_date', function($data){ 
-                    if($data->start_date) {
-                        $formatedDate = Carbon::createFromFormat('Y-m-d', $data->start_date)->format('Y'); 
-                        return $formatedDate; 
-                    }
-                })
+                // ->editColumn('documents.start_date', function ($data) {
+                //     if ($data->start_date) {
+                //         $formatedDate = Carbon::createFromFormat('Y-m-d', $data->start_date)->format('Y');
+                //         return $formatedDate;
+                //     }
+                // })
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
                     $actionBtn = '<a href="' . route("document.edit", $row->id) . '"
               class="edit btn btn-success btn-sm">Edit</a> 
-              <button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Delete</button>';
+              <button class="delete btn btn-danger btn-sm" onclick="deleteItem(' . $row->id . ')">Delete</button>';
                     return $actionBtn;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
         }
-        $eventList = Event::all()->where('status', 1);
-        $userList = User::all()->where('user_type',2)->where('id', '!=', 1);
-        return view('documents.list', compact('eventList','userList'));
+        // $eventList = Event::all()->where('status', 1);
+        // $userList = User::all()->where('user_type', 2)->where('id', '!=', 1);
+        $eventList = Event::where('status', 1)->get();
+        $userList = User::where('user_type', 2)->where('id', '!=', 1)->get();
+
+        return view('documents.list', compact('eventList', 'userList'));
     }
 
     /**
@@ -53,8 +56,8 @@ class DocumentController extends Controller
     public function create()
     {
         $eventList = Event::all()->where('status', 1);
-        $userList = User::all()->where('user_type',2)->where('id', '!=', 1);
-        return view('documents.add', compact('eventList','userList'));
+        $userList = User::all()->where('user_type', 2)->where('id', '!=', 1);
+        return view('documents.add', compact('eventList', 'userList'));
     }
 
     /**
@@ -64,7 +67,7 @@ class DocumentController extends Controller
     {
         $request->validate([
             'event_id' => 'required|not_in:null',
-            'user_id' =>'required|not_in:null',
+            'user_id' => 'required|not_in:null',
             'doc_name' => 'required',
             'docFile' => 'required|max:5042',
         ], [
@@ -91,7 +94,8 @@ class DocumentController extends Controller
      */
     public function show(Document $event)
     {
-        return view('documents.show', compact('event'));
+        //return view('documents.show', compact('event'));
+        return response()->json(['message' => 'Document show view is not yet implemented.'], 404);
     }
 
     /**
@@ -100,8 +104,8 @@ class DocumentController extends Controller
     public function edit(Document $document)
     {
         $eventList = Event::all()->where('status', 1);
-        $userList = User::all()->where('user_type',2)->where('id', '!=', 1);
-        return view('documents.edit', compact('document','eventList','userList'));
+        $userList = User::all()->where('user_type', 2)->where('id', '!=', 1);
+        return view('documents.edit', compact('document', 'eventList', 'userList'));
     }
 
     /**
@@ -109,16 +113,16 @@ class DocumentController extends Controller
      */
     public function update(Request $request, Document $document)
     {
-         $request->validate([
+        $request->validate([
             'event_id' => 'required|not_in:null',
-            'user_id' =>'required|not_in:null',
+            'user_id' => 'required|not_in:null',
             'doc_name' => 'required',
         ], [
             'event_id' => 'The event name is required',
             'user_id' => 'The seller name is required',
         ]);
         $input = $request->all();
-        
+
         if ($image = $request->file('docFile')) {
             $destinationPath = 'public/documents/';
             $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
@@ -141,7 +145,6 @@ class DocumentController extends Controller
         $banner->status = 0;
         $banner->save();
         return response()->json(['success' => 'Document deleted Successfully!']);
-        return redirect()->route('document.index')
-            ->with('success', 'Event deleted successfully');
+        //return redirect()->route('document.index')->with('success', 'Event deleted successfully');
     }
 }

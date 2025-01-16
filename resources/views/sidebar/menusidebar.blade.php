@@ -4,8 +4,8 @@
         <div class="h-full bg-white dark:bg-[#0e1726]">
             <div class="flex items-center justify-between px-4 py-3">
                 <a href="" class="main-logo flex shrink-0 items-center">
-                    <img class="ml-[5px] w-8 flex-none" src="{{ asset('assets/images/logo.png') }}" width="100"
-                        alt="image">
+                    <img class="ml-[5px] w-8 flex-none team-single-imgs" src="{{ asset('assets/images/logo.png') }}"
+                        width="100" alt="image">
                     <span
                         class="align-middle text-2xl font-semibold ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light lg:inline">SSU
                         - Admin</span>
@@ -227,7 +227,7 @@
                         </li>
                         <?php } ?>
                         <?php if ($role_id == '1' || $role_id == '2' ) { ?>
-                        <li class="nav-item">
+                        {{-- <li class="nav-item">
                             <a href="{{ route('graphic.index') }}"
                                 class="group {{ request()->is('graphic*') ? 'active' : '' }}">
                                 <div class="flex items-center">
@@ -261,7 +261,7 @@
                                     </span>
                                 </div>
                             </a>
-                        </li>
+                        </li> --}}
                         <?php } ?>
                         <?php if ($role_id == '1') { ?>
                         <li class="nav-item">
@@ -291,7 +291,7 @@
                         </li>
                         <?php } ?>
                         <?php if ($role_id == '1') { ?>
-                        <li class="nav-item">
+                        {{-- <li class="nav-item">
                             <a href="{{ route('contactus.index') }}"
                                 class="group {{ request()->is('contactus*') ? 'active' : '' }}">
                                 <div class="flex items-center">
@@ -307,7 +307,7 @@
                                     </span>
                                 </div>
                             </a>
-                        </li>
+                        </li> --}}
                         <?php } ?>
                         <?php if ($role_id == '1') { ?>
                         <li class="nav-item">
@@ -415,8 +415,8 @@
                                         class="text-black ltr:pl-3 rtl:pr-3 dark:text-[#506690] dark:group-hover:text-white-dark">Reports</span>
                                 </div>
                                 <?php 
-                                                        $expnad = (request()->is('reports') == 1) ? '!rotate-90' : 'rtl:rotate-180';  
-                                                        ?>
+                                    $expnad = (request()->is('reports') == 1) ? '!rotate-90' : 'rtl:rotate-180';  
+                                    ?>
                                 <div class="{{ $expnad }}" :class="{'!rotate-90' : activeDropdown === 'reports'}">
                                     <svg width="16" height="16" viewbox="0 0 24 24" fill="none"
                                         xmlns="http://www.w3.org/2000/svg">
@@ -442,6 +442,14 @@
                                     <a class="group {{ request()->is('reportscoupons*') ? 'active' : '' }}"
                                         href="{{ route('reportscoupons.index') }}">Seller Coupons
                                         Reports Data</a>
+                                </li>
+                                <li>
+                                    <a class="group {{ request()->is('sellerpoints*') ? 'active' : '' }}"
+                                        href="{{ route('sellerpoints.index') }}">Seller Points Data</a>
+                                </li>
+                                <li>
+                                    <a class="group {{ request()->is('winner*') ? 'active' : '' }}"
+                                        href="{{ route('winner.index') }}">Winners Data</a>
                                 </li>
                                 <?php } ?>
                             </ul>

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Datatables;
 use Illuminate\Support\Facades\DB;
-use Hash;
+// use Hash;
 use App\Imports\UsersImport;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -23,14 +23,23 @@ class SellerController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = User::all()->whereNotIn('id', 1)->where('user_type', 2)->where('status', 1);
+            // $data = User::all()->where('id', '!=', 1)->where('user_type', 2)->where('status', 1);
+            // $data = User::where('id', '!=', 1)
+            //     ->where('user_type', 2)
+            //     ->where('status', 1)
+            //     ->paginate(10); // or use ->limit()
+            $data = User::query()
+                ->where('id', '!=', 1)
+                ->where('user_type', 2)
+                ->where('status', 1)
+                ->get();
             return Datatables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
-                    $actionBtn = '<a href="' . URL("details/". $row->id) . '"
+                    $actionBtn = '<a href="' . URL("details/" . $row->id) . '"
               class="store btn btn-warning btn-sm approve">View</a> <a href="' . route("seller.edit", $row->id) . '"
               class="edit btn btn-success btn-sm">Edit</a> 
-              <button class="delete btn btn-danger btn-sm" onclick="deleteItem('.$row->id.')">Delete</button>
+              <button class="delete btn btn-danger btn-sm" onclick="deleteItem(' . $row->id . ')">Delete</button>
               &nbsp;<a href="' . route("seller.show", $row->id) . '"
               class="edit btn btn-info btn-sm viewCoupo">View Coupons</a>';
                     return $actionBtn;
@@ -54,7 +63,7 @@ class SellerController extends Controller
      */
     public function store(Request $request)
     {
-      
+
         $request->validate([
             'name' => 'required|string|max:50',
             'lname' => 'required|string|max:50',
@@ -114,19 +123,21 @@ class SellerController extends Controller
      */
     public function show(Request $request, $id)
     {
-       
+
         $couponsList = DB::table('seller_coupons')
-            ->select(DB::raw("CONCAT('#', seller_coupons.coupon_number) AS coupon_number"),'seller_coupons.is_assign', DB::raw("CASE WHEN seller_coupons.is_assign = 0 THEN 'Available' WHEN seller_coupons.is_assign = 1 THEN 'Assigned'  ELSE 'Available' END is_assign"))
+            ->select(DB::raw("CONCAT('#', seller_coupons.coupon_number) AS coupon_number"), 'seller_coupons.is_assign', DB::raw("CASE WHEN seller_coupons.is_assign = 0 THEN 'Available' WHEN seller_coupons.is_assign = 1 THEN 'Assigned'  ELSE 'Available' END is_assign"))
             ->leftJoin('events', 'events.id', '=', 'seller_coupons.event_id')
-            ->where('seller_coupons.user_id', '=', $id)->get();
- 
+            ->where('seller_coupons.user_id', '=', $id)
+            ->where('seller_coupons.status', '=', '1')
+            ->get();
+
         if ($request->ajax()) {
             return Datatables::of($couponsList)
                 ->addIndexColumn()
                 ->make(true);
         }
 
-        return view('sellers.show', compact('couponsList','id'));
+        return view('sellers.show', compact('couponsList', 'id'));
     }
 
     /**
@@ -201,12 +212,10 @@ class SellerController extends Controller
         $book->status = 0;
         $book->save();
         return response()->json(['success' => 'Seller deleted Successfully!']);
-
-        return redirect()->route('seller.index')
-            ->with('success', 'Seller deleted successfully');
     }
 
-    public function importUsers(Request $request) {
+    public function importUsers(Request $request)
+    {
         // Get the uploaded file
         $request->validate([
             'file' => 'required|file|mimes:xlsx',
@@ -218,7 +227,7 @@ class SellerController extends Controller
 
             return back()->with('success', 'Users imported successfully!');
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-           $failures = $e->failures();
+            $failures = $e->failures();
 
             return back()->with('failures', $failures);
         }

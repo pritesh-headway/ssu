@@ -713,6 +713,13 @@ www.headway.guru
             return $checkToken->getContent();
         }
 
+        if (true) {
+            $result['status'] = false;
+            $result['message'] = 'You cannot assign the coupon now as the allotted time has expired.';
+            $result['data'] = (object) [];
+            return response()->json($result, 200);
+        }
+
         $customerData = User::where('phone_number', $request->phone_number)->where(['status'=> 1,'user_type' => 4])->first();
         $isCustomer = 0;
         if(isset($customerData)) {
@@ -1056,8 +1063,8 @@ www.headway.guru
              'current_event_id' => $current_event_id,
              'winner_info_html' => $noticeData[0]->content,
              'prize_info_html' => $noticeData[1]->content,
-             'min_coupon_order' => 1000,
-             'max_coupon_order' => 2000,
+             'min_coupon_order' => 100,
+             'max_coupon_order' => 1000,
              'ssu_email_support' => 'info@headway.org.in',
              'ssu_phone_support' => '+91 9081241916',
              'fb' => $socialData[0]->link,
@@ -1425,7 +1432,7 @@ www.headway.guru
         $prizeLists = Prize::select('events.event_name','prizes.prize_name','prizes.prize_qty', 'prizes.prize_amount', DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->prize_path . "', prizes.image),'') AS image"))->leftJoin('events', 'events.id', '=', 'prizes.event_id')
             ->where('events.id', '=', $event_id)
             ->where('events.status', '=', 1)
-            ->where('prizes.status', '=', 1)
+            ->where('prizes.status', '=', 1)->orderBy('prizes.prize_amount', 'DESC')
             ->paginate($this->per_page_show, ['*'], 'page', $page_number);
 
         $pagination = [
@@ -1675,16 +1682,22 @@ www.headway.guru
             return response()->json($result, 200);
         }
 
+    
         $winnersList = Winner::where('winners.status', '=', 1)->where('prizes.status', '=', 1)->where('prizes.status', '=', 1)
-        ->select('winners.id', 'winners.user_id', 'winners.event_id', 'winners.coupon_number', 'prizes.prize_name', DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->winner_path . "', prizes.image),'') AS image"), DB::raw("CONCAT(users.name, ' ', users.lname) AS customer_name"), DB::raw("CONCAT(users2.name, ' ', users2.lname) AS seller_name"))
-        ->leftJoin('prizes', 'prizes.id', '=', 'winners.prize_id')
-        ->leftJoin('users', 'users.id', '=', 'winners.customer_id')
-        ->leftJoin('users AS users2', 'users2.id', '=', 'winners.user_id')
-        ->leftJoin('events', 'events.id', '=', 'winners.event_id')
-        // ->where('winners.user_id', '=', $user_id)
-        ->where('prizes.prize_name', 'like', '%' . $search . '%')
-        ->where('winners.event_id', '=', $event_id)
-        ->paginate($this->per_page_show, ['*'], 'page', $page_number);
+            ->select('winners.id', 'winners.user_id', 'winners.event_id', 'winners.coupon_number', 'prizes.prize_name', DB::raw("IFNULL(CONCAT('" . $base_url . "','" . $this->winner_path . "', prizes.image),'') AS image"), DB::raw("CONCAT(users.name, ' ', users.lname) AS customer_name"), 'users2.storename AS seller_name', 'users.city AS customer_city')
+            ->leftJoin('prizes', 'prizes.id', '=', 'winners.prize_id')
+            ->leftJoin('users', 'users.id', '=', 'winners.customer_id')
+            ->leftJoin('users AS users2', 'users2.id', '=', 'winners.user_id')
+            ->leftJoin('events', 'events.id', '=', 'winners.event_id')
+            ->where(function ($query) use ($search) {
+                $query->where('prizes.prize_name', 'like', '%' . $search . '%')
+                      ->orWhere('winners.coupon_number', 'like', '%' . $search . '%')
+                      ->orWhere('users2.storename', 'like', '%' . $search . '%')
+                      ->orWhere('users.name', 'like', '%' . $search . '%');
+            })
+            ->where('winners.event_id', '=', $event_id)
+            // ->where('winners.user_id', $user_id)
+            ->paginate($this->per_page_show, ['*'], 'page', $page_number);
 
         $pagination = [
             'total' => $winnersList->total(),

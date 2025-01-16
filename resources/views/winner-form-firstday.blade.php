@@ -163,9 +163,9 @@
         }
 
         .winner-container h1 {
-            font-size: 110px;
+            font-size: 80px;
             color: gold;
-            margin-bottom: 1rem;
+            margin-bottom: 35rem;
             text-shadow: 2px 2px 10px rgba(255, 255, 0, 0.8);
         }
 
@@ -178,16 +178,6 @@
             font-size: 50px;
             text-transform: capitalize;
         }
-
-        /* #coupon-number {
-                font-size: 35px;
-            }
-    
-            .coupon-number-yellow {
-                font-size: 95px;
-                color: gold;
-                text-shadow: 2px 2px 10px rgba(255, 255, 0, 0.8);
-            } */
 
         .coupon-number-yellow {
             color: gold;
@@ -276,28 +266,10 @@
             }
         }
 
-        /* Rotate CSS */
-        /* img#prize-image {
+        .winner-container {
+            text-align: center;
             width: 100%;
-            height: auto;
-            animation: rotatesss 4s linear infinite;
         }
-
-        .left-side {
-            overflow: hidden;
-            justify-content: center;
-            align-items: center;
-        }
-
-        @keyframes rotatesss {
-            from {
-                transform: rotateX(0deg);
-            }
-
-            to {
-                transform: rotateY(360deg);
-            }
-        } */
     </style>
 </head>
 
@@ -312,16 +284,8 @@
             $prize = $prize;
             $number = $_POST['number'];
     ?>
-    {{--
-    <lottie-player src="{{ URL('public/assets/lottie/SideAnimation.json') }}" background="transparent" speed="1" loop
-        autoplay>
-    </lottie-player> --}}
     <div class="content-container">
-        <div class="background-animation">
-            <lottie-player src="{{ URL('public/assets/lottie/Animation-cracker.json') }}" background="transparent"
-                speed="1" loop autoplay>
-            </lottie-player>
-        </div>
+
         <div class="fireworks">
             <div class="firework" style="width: 100px; height: 100px; left: 20%; top: 30%; animation-delay: 0s;">
             </div>
@@ -337,35 +301,103 @@
 
         <div class="logo-container">
             <img src="{{ URL('public/assets/images/SSU_LOGO.png') }}" class="ssu-logo left-logo" />
-            <h1 style="color: #fff; text-align:center;margin-left: -9%; font-size:70px">Suvarna Saubhagya Utsav 2024
+            <h1 style="color: #fff; text-align:center;margin-left: -9%; font-size:70px;margin: 0;">Suvarna Saubhagya
+                Utsav 2024
             </h1>
             <img src="{{ URL('public/assets/images/Logo With bg.png') }}" class="headway-logo right-logo" />
         </div>
+        <div class="winner-container">
+            <h1>Congratulations!</h1>
+            {{-- <p>Coupon Number <br /><span class="coupon-number-yellow"><b>{{ $number }}</b></span></p> --}}
+            <div style="width: 100%; text-align: center; ">
+                <div
+                    style="width: 80%; max-width: 1200px; margin: 0 auto; position: fixed; top: 65%; left: 50%; transform: translate(-50%, -50%);">
+                    <!-- Table Header (fixed) -->
+                    <table style="width: 100%; border-collapse: collapse;">
+                        {{-- <thead style="background-color: #fff;color:#000;text-align:center;">
+                            <tr>
+                                <th>Store Name</th>
+                                <th>Coupon Number</th>
+                                <th>Customer Name</th>
+                                <th>Customer City</th>
+                                <th>Phone Number</th>
+                            </tr>
+                        </thead> --}}
+                    </table>
 
-        {{-- <div class="logo-container">
-            <img src="{{ URL('public/assets/images/SSU_LOGO.png') }}" class="ssu-logo left-logo" />
-            <h1 class="center-text">Congratulations!</h1>
-            <img src="{{ URL('public/assets/images/Logo With bg.png') }}" class="headway-logo right-logo" />
-        </div> --}}
-        <!-- Left Side (Prize Image and Name) -->
-        <div class="left-side">
-            <img id="prize-image" src="{{ $image }}" alt="Winner Prize">
-            <span class="prize-name"><b>{{ $prize }}</b></span>
-        </div>
+                    <!-- Table Body (scrollable) -->
+                    <a id="clickBtnDownload" style="color: white;display:none"
+                        href="{{ url('/download-winner-list') }}?numberCountDigit={{ $numberCountDigit }}&number={{ $number }}&prizeName={{ $prize }}"
+                        class="btn btn-primary"><b>Download Winner List</b></a>
+                    <div style="max-height: 500px; overflow-y: auto;">
 
-        <!-- Right Side (Winner Content) -->
-        <div class="right-side">
-            <div class="winner-container">
-                <h1>Congratulations!</h1>
-                <p>Coupon Number <br /><span class="coupon-number-yellow"><b>{{ $number }}</b></span></p>
-                <p><span id="customer-name">{{ $customer_name }} ({{ $city }})</span></p>
-                <p><span>{{ $storename }}</span></p>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead style="background-color: #fff;color:#000;text-align:center;">
+                                <tr>
+                                    <th
+                                        style="position: sticky; top: 0; z-index: 1; border: 1px solid #ddd; background-color:#fff;color:#000; padding: 8px; text-align: center;">
+                                        Store Name</th>
+                                    <th
+                                        style="position: sticky; top: 0; z-index: 1; border: 1px solid #ddd; background-color:#fff;color:#000; padding: 8px; text-align: center;">
+                                        Coupon Number</th>
+                                    <th
+                                        style="position: sticky; top: 0; z-index: 1; border: 1px solid #ddd; background-color:#fff;color:#000; padding: 8px; text-align: center;">
+                                        Customer Name</th>
+                                    <th
+                                        style="position: sticky; top: 0; z-index: 1; border: 1px solid #ddd; background-color:#fff;color:#000; padding: 8px; text-align: center;">
+                                        Customer City</th>
+                                    <th
+                                        style="position: sticky; top: 0; z-index: 1; border: 1px solid #ddd; background-color:#fff;color:#000; padding: 8px; text-align: center;">
+                                        Phone Number</th>
+                                    <th
+                                        style="position: sticky; top: 0; z-index: 1; border: 1px solid #ddd; background-color:#fff;color:#000; padding: 8px; text-align: center;">
+                                        Prize</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if($data && count($data) > 0)
+                                @foreach($data as $key => $value)
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;width: auto;">{{
+                                        $value->storename }}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;width: auto;">{{
+                                        $value->coupon_number }}
+                                    </td>
+                                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;width: auto;">{{
+                                        ($value->customer_name) ? $value->customer_name: '-' }}
+                                    </td>
+                                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;width: auto;">{{
+                                        ($value->city) ? $value->city : '-'
+                                        }}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;width: auto;">{{
+                                        ($value->phone_number) ? $value->phone_number : '-' }}
+                                    </td>
+                                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;width: auto;">{{
+                                        $prize }}
+                                    </td>
+                                </tr>
+                                @endforeach
+                                @else
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">This number is already a winner.</td>
+                                </tr>
+                                @endif
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    {{-- <lottie-player src="{{ URL('public/assets/lottie/SideAnimation.json') }}" background="transparent" speed="1"
-        loop autoplay>
-    </lottie-player> --}}
+    </div>
+    <script>
+        function callURL() {
+            const button = document.getElementById('clickBtnDownload'); // Get the button element
+            // button.click();
+        }
+        setTimeout(callURL, 3000); // 3000 milliseconds = 3 seconds
+    </script>
 
     <?php } else {
         
@@ -378,7 +410,8 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <div class="logo-container">
         <img src="{{ URL('public/assets/images/SSU_LOGO.png') }}" class="ssu-logo left-logo" />
-        <h1 style="color: #fff; text-align:center;margin-left: -9%; font-size:70px">Suvarna Saubhagya Utsav 2024</h1>
+        <h1 style="color: #fff; text-align:center;margin-left: -9%; font-size:70px">Suvarna Saubhagya Utsav 2024
+        </h1>
         <img src="{{ URL('public/assets/images/Logo With bg.png') }}" class="headway-logo right-logo" />
     </div>
     <form action="" id="myForm" method="POST" class="form-group-elements">
@@ -395,7 +428,7 @@
             <label for="email" style="font-size: 20px; color: #fff">Day Select:</label>
             <select name="day" class="form-control" required style="font-size: 16px">
                 <?php $Currentdate = date('Y-m-d'); 
-                    if ($Currentdate == '2025-01-10') { 
+                    if ($Currentdate == '2025-01-09') { 
                 ?>
                 <option value='1'>First Day (Token Base)</option>
                 <?php } else if ($Currentdate == '2025-01-11') { ?>
@@ -426,9 +459,6 @@
             style="font-size: 20px">Submit</button>
         <button type="reset" name="btn" class="btn btn-info" style="font-size: 20px">Reset</button>
     </form>
-    <script>
-
-    </script>
     <?php } ?>
 
 </body>

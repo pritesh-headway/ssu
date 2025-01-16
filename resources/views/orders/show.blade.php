@@ -241,6 +241,7 @@
         background-color: #ff5722
     }
 </style>
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <div class="animate__animated p-6" :class="[$store.app.animation]">
     <div class="container mt-5">
         @if ($message = Session::get('success'))
@@ -303,13 +304,20 @@
                                             <div class="col-md-7 col-7">
 
                                                 <?php if($slotdata) { foreach ($slotdata as $key => $value) { ?>
-
                                                 <p>
                                                     <b>Book Slot {{ $key+1 }}: </b>
                                                     <?php echo $value->slot ?>
+                                                    <!-- Delete Button -->
+                                                    <button class="btn btn-danger btn-sm delete-slot"
+                                                        data-id="<?php echo $value->id; ?>"
+                                                        style="float: right; margin-left: 10px;">
+                                                        Delete
+                                                    </button>
                                                 </p>
                                                 <?php } } ?>
-                                                <a style="float: right" class="store btn btn-warning btn-sm approve"
+                                                <br />
+                                                <a style="float: right;font-size:13px"
+                                                    class="store btn btn-warning btn-sm approve"
                                                     href="{{ URL('slots/'.$order['id']) }}">Edit Slot</a>
                                             </div>
                                         </div>
@@ -380,5 +388,42 @@
     integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
 </script>
 <script src="{{ URL::to('assets/js/dataTables.bootstrap5.min.js') }}"></script>
-
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Attach click event to delete buttons
+        document.querySelectorAll('.delete-slot').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const slotId = this.getAttribute('data-id');
+                const qntity = {{ $couponData->quantity }};
+                if (confirm('Are you sure you want to delete this slot?')) {
+                    // AJAX call to delete slot
+                    fetch(`slotUpdateStatus/${slotId}/${qntity}`, {
+                        method: 'PUT',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                        _method: 'PUT', // Simulate PUT for Laravel
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Slot deleted successfully');
+                            // Optionally, remove the slot from the DOM
+                            this.closest('p').remove();
+                        } else {
+                            alert('Error deleting slot');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error deleting slot');
+                    });
+                }
+            });
+        });
+    });
+</script>
 @endsection

@@ -17,9 +17,10 @@ class ReportsController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = DB::select('SELECT co.user_id, COUNT(co.id) AS order_count, u.storename, u.city, u.area,SUM(co.quantity) coupons
+            $data = DB::select('SELECT co.user_id, COUNT(co.id) AS order_count, u.storename, u.city, u.phone_number,SUM(co.quantity) coupons_bk,
+(SELECT count(id) as totalCnt  FROM `seller_coupons` WHERE `user_id` = co.user_id AND status = 1 and event_id = co.event_id) as coupons
             FROM coupons_order co
-            LEFT JOIN users u ON u.id = co.user_id
+            LEFT JOIN users u ON u.id = co.user_id AND u.status = 1
             WHERE co.order_status !="2"
             GROUP BY co.user_id
             HAVING COUNT(co.id) > 0
@@ -38,6 +39,4 @@ class ReportsController extends Controller
 
         return view('reports.sellersList', compact('sellers'));
     }
-
-   
 }

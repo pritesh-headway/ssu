@@ -24,7 +24,7 @@ class CouponsExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
 
     public function collection(): Collection
     {
-       $data =  DB::select('SELECT
+        $data =  DB::select('SELECT
                                 acc.id,
                                 S.storename,
                                 CONCAT(C.name, " ", C.lname) AS CustomerName,
@@ -37,9 +37,9 @@ class CouponsExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
                             JOIN users C ON
                                 C.id = acc.customer_id
                             WHERE
-                                acc.user_id = "'.$this->userId.'" 
+                                acc.user_id = "' . $this->userId . '" 
                             GROUP BY acc.coupon_number  
-                            ORDER BY acc.coupon_number ASC');
+                            CAST(acc.coupon_number AS UNSIGNED) ASC');
         return collect($data);
     }
 
@@ -60,7 +60,6 @@ class CouponsExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
         $sheet->getStyle('A1:F1')->getFont()->setBold(true); // Make the font bold
         $sheet->getStyle('A1:F1')->getAlignment()->setHorizontal('center'); // Center-align the headers
 
-         $sheet->getStyle('A2:F' . (count($this->collection()) + 1))->getAlignment()->setHorizontal('center'); // Center-align the data
+        $sheet->getStyle('A2:F' . (count($this->collection()) + 1))->getAlignment()->setHorizontal('center'); // Center-align the data
     }
-
 }
